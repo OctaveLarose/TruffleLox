@@ -1,0 +1,37 @@
+<project name="rareshroom" basedir="." default="compile">
+
+    <property name="src.dir"     location="src"/>
+    <property name="lib.dir"     location="libs" />
+    <property name="mx.cmd" location="${lib.dir}/mx/mx" />
+
+    <property name="build.dir"   value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+
+    <property name="labs-jdk" value="labsjdk-ce-17" />
+
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <target name="compile">
+        <mkdir dir="build/classes"/>
+        <javac srcdir="src" destdir="build/classes" classpathref="classpath" includeantruntime="false"/>
+    </target>
+
+    <target name="jar">
+        <mkdir dir="${build.dir}/jar"/>
+        <jar destfile="${build.dir}/jar/HelloWorld.jar" basedir="${build.dir}/classes">
+            <manifest>
+                <attribute name="Main-Class" value="rareshroom.HelloWorld"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run">
+        <java jar="${build.dir}/jar/HelloWorld.jar" fork="true"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}/"/>
+    </target>
+</project>
