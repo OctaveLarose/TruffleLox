@@ -3,6 +3,7 @@ package rareshroom.parser;
 import rareshroom.nodes.ExpressionNode;
 import rareshroom.nodes.IntLiteralNode;
 import rareshroom.nodes.arithmetic.AddNode;
+import rareshroom.nodes.arithmetic.SubstractNode;
 
 import java.util.List;
 
@@ -42,9 +43,15 @@ public class ShroomParser {
     private ExpressionNode term() throws ParseError {
         ExpressionNode expr = primary();
 
-        while (match(TokenType.PLUS)) {
+        while (match(TokenType.PLUS, TokenType.MINUS)) {
+            TokenType operatorType = previous().type;
             ExpressionNode right = primary();
-            expr = new AddNode(expr, right);
+
+            if (operatorType == TokenType.PLUS)
+                expr = new AddNode(expr, right);
+            else if (operatorType == TokenType.MINUS) {
+                expr = new SubstractNode(expr, right);
+            }
         }
         // TODO minus here
 
