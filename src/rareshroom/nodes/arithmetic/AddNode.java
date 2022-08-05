@@ -1,18 +1,24 @@
 package rareshroom.nodes.arithmetic;
 
-import com.oracle.truffle.api.nodes.Node;
-import rareshroom.nodes.IntLiteralNode;
+import rareshroom.nodes.BinaryExprNode;
+import rareshroom.nodes.ExpressionNode;
 
-public class AddNode extends Node {
-    @Child private IntLiteralNode left;
-    @Child private IntLiteralNode right;
+public class AddNode extends BinaryExprNode {
+    @Child private ExpressionNode left;
+    @Child private ExpressionNode right;
 
-    private AddNode(IntLiteralNode left, IntLiteralNode right) {
+    public AddNode(ExpressionNode left, ExpressionNode right) {
+        super();
         this.left = left;
         this.right = right;
     }
 
-    public long execute() {
-        return Math.addExact(left.execute(), right.execute());
+    @Override
+    public Object executeGeneric() {
+        return executeLong(); // TODO so there shouldn't be any need to implement it as AddNode should be abstract itself, and generate a specialized class
+    }
+
+    public long executeLong() {
+        return Math.addExact(left.executeLong(), right.executeLong());
     }
 }

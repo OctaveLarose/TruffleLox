@@ -4,9 +4,11 @@ import rareshroom.parser.ShroomParser;
 
 public class Main {
     static public void main(String[] args) {
-        ShroomParser shroomParser = new ShroomParser();
+        String sourceStr = "42 + 13 + 24";
+        ShroomParser shroomParser = new ShroomParser(sourceStr);
 
-        shroomParser.setInput("42 + 13");
-        shroomParser.parse();
+        var parseOutput = shroomParser.parse();
+
+        System.out.println("Output: " + parseOutput.executeGeneric());
     }
 }

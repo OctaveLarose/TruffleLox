@@ -3,6 +3,8 @@ package rareshroom.parser;
 import java.util.ArrayList;
 import java.util.List;
 
+import static rareshroom.parser.Token.TokenType;
+
 public class ShroomLexer {
     String sourceStr;
     int currentIdx;
@@ -13,32 +15,6 @@ public class ShroomLexer {
     ShroomLexer(String sourceInput) {
         this.sourceStr = sourceInput;
         this.tokens = new ArrayList<>();
-    }
-
-    enum TokenType {
-        MINUS, PLUS, SLASH, STAR,
-        EQUAL,
-        NUMBER,
-        SEMICOLON,
-        EOF
-    }
-
-    static class Token {
-        final TokenType type;
-        final String lexeme;
-        final Object literal;
-
-        Token(TokenType type, String lexeme, Object literal) {
-            this.type = type;
-            this.lexeme = lexeme;
-            this.literal = literal;
-        }
-
-        public String toString() {
-            return type + " "
-                    + (literal != null ? literal : "")
-                    + " \"" + lexeme + "\"";
-        }
     }
 
     private static final String[] literalNames = new String[] {null, "+", "-", "*", "/", "=", ";"};
@@ -73,7 +49,7 @@ public class ShroomLexer {
         addToken(TokenType.NUMBER, Long.parseLong(sourceStr.substring(this.symStartIdx, this.currentIdx)));
     }
 
-    private void addToken(TokenType tokenType) {
+    private void addToken(Token.TokenType tokenType) {
         this.addToken(tokenType, null);
     }
 
@@ -82,7 +58,7 @@ public class ShroomLexer {
         this.tokens.add(new Token(tokenType, lexeme, literal));
     }
 
-    public List<Token> getTokens() throws LexerException {
+    public List<Token> getTokens() throws ParseError {
         while (this.currentIdx < sourceStr.length()) {
             this.symStartIdx = this.currentIdx;
             char c = advance();
@@ -106,10 +82,12 @@ public class ShroomLexer {
                     if (isDigit(c)) {
                         number();
                     } else {
-                        throw new LexerException("Unknown character : " + c);
+                        throw new ParseError("Unknown character : " + c);
                     }
             }
         }
+        this.symStartIdx = this.currentIdx;
+        addToken(TokenType.EOF);
         return tokens;
     }
 }

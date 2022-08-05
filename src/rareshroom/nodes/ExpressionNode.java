@@ -2,8 +2,10 @@ package rareshroom.nodes;
 
 import com.oracle.truffle.api.nodes.Node;
 
-public class ExpressionNode extends Node {
-    public Object execute() {
-        return null; // TODO
+public abstract class ExpressionNode extends Node {
+    public abstract Object executeGeneric();
+
+    public long executeLong() {
+        return (long) executeGeneric();
     }
 }
