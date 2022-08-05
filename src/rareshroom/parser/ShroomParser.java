@@ -3,6 +3,8 @@ package rareshroom.parser;
 import rareshroom.nodes.ExpressionNode;
 import rareshroom.nodes.IntLiteralNode;
 import rareshroom.nodes.arithmetic.AddNode;
+import rareshroom.nodes.arithmetic.DivNode;
+import rareshroom.nodes.arithmetic.MultNode;
 import rareshroom.nodes.arithmetic.SubstractNode;
 
 import java.util.List;
@@ -41,11 +43,11 @@ public class ShroomParser {
     }
 
     private ExpressionNode term() throws ParseError {
-        ExpressionNode expr = primary();
+        ExpressionNode expr = factor();
 
         while (match(TokenType.PLUS, TokenType.MINUS)) {
             TokenType operatorType = previous().type;
-            ExpressionNode right = primary();
+            ExpressionNode right = factor();
 
             if (operatorType == TokenType.PLUS)
                 expr = new AddNode(expr, right);
@@ -53,15 +55,38 @@ public class ShroomParser {
                 expr = new SubstractNode(expr, right);
             }
         }
-        // TODO minus here
 
         return expr;
     }
-    private IntLiteralNode primary() throws ParseError {
-        if (match(TokenType.NUMBER))
+
+    private ExpressionNode factor() throws ParseError {
+        ExpressionNode expr = primary();
+
+        while (match(TokenType.STAR, TokenType.SLASH)) {
+            TokenType operatorType = previous().type;
+            ExpressionNode right = primary();
+
+            if (operatorType == TokenType.STAR)
+                expr = new MultNode(expr, right);
+            else if (operatorType == TokenType.SLASH) {
+                expr = new DivNode(expr, right);
+            }
+        }
+
+        return expr;
+    }
+
+    private ExpressionNode primary() throws ParseError {
+        if (match(TokenType.NUMBER)) {
             return new IntLiteralNode((Long) previous().literal);
-        else
+        } else if (match(TokenType.PAREN_OPEN)) {
+            ExpressionNode expr = expression();
+            if (!match(TokenType.PAREN_CLOSE))
+                throw new ParseError("Unclosed parentheses");
+            return expr;
+        } else {
             throw new ParseError("Invalid expression");
+        }
     }
 
     private boolean isAtEnd() {

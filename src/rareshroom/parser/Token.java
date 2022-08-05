@@ -3,6 +3,7 @@ package rareshroom.parser;
 public class Token {
     enum TokenType {
         MINUS, PLUS, SLASH, STAR,
+        PAREN_OPEN, PAREN_CLOSE,
         EQUAL,
         NUMBER,
         SEMICOLON,

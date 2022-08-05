@@ -20,6 +20,13 @@ public class Main {
 
         // Multiplication
         arithmeticAssert("3 * 4", 12);
+        arithmeticAssert("3 * 18 + 13", 67);
+
+        // Division
+        arithmeticAssert("18 / 3", 6);
+        arithmeticAssert("1783 / 3", 594); // You should not be valid though
+        arithmeticAssert("163 * 5 + 100 / 4 - 12 * 2 + 145", 961);
+        arithmeticAssert("163 * (5 + 100 / 4) - 12 * (2 + 145)", 3126);
     }
 
     static private void arithmeticAssert(String input, long expectedOutput) {
