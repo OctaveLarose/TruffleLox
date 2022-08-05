@@ -2,12 +2,7 @@
 
     <property name="src.dir"     location="src"/>
     <property name="lib.dir"     location="libs" />
-    <property name="mx.cmd" location="${lib.dir}/mx/mx" />
-
     <property name="build.dir"   value="build"/>
-    <property name="classes.dir" value="${build.dir}/classes"/>
-
-    <property name="labs-jdk" value="labsjdk-ce-17" />
 
     <path id="classpath">
         <fileset dir="${lib.dir}" includes="**/*.jar"/>
@@ -18,17 +13,17 @@
         <javac srcdir="src" destdir="build/classes" classpathref="classpath" includeantruntime="false"/>
     </target>
 
-    <target name="jar">
+    <target name="jar" depends="compile">
         <mkdir dir="${build.dir}/jar"/>
-        <jar destfile="${build.dir}/jar/HelloWorld.jar" basedir="${build.dir}/classes">
+        <jar destfile="${build.dir}/jar/${ant.project.name}.jar" basedir="${build.dir}/classes">
             <manifest>
-                <attribute name="Main-Class" value="rareshroom.HelloWorld"/>
+                <attribute name="Main-Class" value="${ant.project.name}.Main"/>
             </manifest>
         </jar>
     </target>
 
-    <target name="run">
-        <java jar="${build.dir}/jar/HelloWorld.jar" fork="true"/>
+    <target name="run" depends="jar">
+        <java jar="${build.dir}/jar/${ant.project.name}.jar" fork="true"/>
     </target>
 
     <target name="clean">
