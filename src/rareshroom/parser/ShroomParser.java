@@ -1,12 +1,12 @@
 package rareshroom.parser;
 
 import rareshroom.nodes.ExpressionNode;
-import rareshroom.nodes.arithmetic.AddNode;
-import rareshroom.nodes.arithmetic.DivNode;
-import rareshroom.nodes.arithmetic.MultNode;
-import rareshroom.nodes.arithmetic.SubstractNode;
-import rareshroom.nodes.comparison.EqualsNode;
-import rareshroom.nodes.comparison.NotEqualsNode;
+import rareshroom.nodes.arithmetic.AddNodeFactory;
+import rareshroom.nodes.arithmetic.DivNodeFactory;
+import rareshroom.nodes.arithmetic.MultNodeFactory;
+import rareshroom.nodes.arithmetic.SubNodeFactory;
+import rareshroom.nodes.comparison.EqualsNodeFactory;
+import rareshroom.nodes.comparison.NotEqualsNodeFactory;
 import rareshroom.nodes.literals.NumberLiteralNode;
 
 import java.util.List;
@@ -62,9 +62,9 @@ public class ShroomParser {
             ExpressionNode arg = term();
 
             if (operatorType == TokenType.DOUBLE_EQUALS) {
-                expr = new EqualsNode(expr, arg);
+                expr = EqualsNodeFactory.create(expr, arg);
             } else {
-                expr = new NotEqualsNode(expr, arg);
+                expr = NotEqualsNodeFactory.create(expr, arg);
             }
         }
 
@@ -79,9 +79,9 @@ public class ShroomParser {
             ExpressionNode right = factor();
 
             if (operatorType == TokenType.PLUS) {
-                expr = new AddNode(expr, right);
+                expr = AddNodeFactory.create(expr, right);
             } else if (operatorType == TokenType.MINUS) {
-                expr = new SubstractNode(expr, right);
+                expr = SubNodeFactory.create(expr, right);
             }
         }
 
@@ -96,9 +96,9 @@ public class ShroomParser {
             ExpressionNode right = primary();
 
             if (operatorType == TokenType.STAR)
-                expr = new MultNode(expr, right);
+                expr = MultNodeFactory.create(expr, right);
             else if (operatorType == TokenType.SLASH) {
-                expr = new DivNode(expr, right);
+                expr = DivNodeFactory.create(expr, right);
             }
         }
 
@@ -131,9 +131,9 @@ public class ShroomParser {
         return peek().type == type;
     }
 
-    private Token advance() {
+    private void advance() {
         if (!isAtEnd()) currentIdx++;
-        return previous();
+//        return previous();
     }
     private Token previous() {
         return tokens.get(currentIdx - 1);

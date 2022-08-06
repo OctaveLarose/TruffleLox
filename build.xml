@@ -3,6 +3,8 @@
     <property name="src.dir"     location="src"/>
     <property name="lib.dir"     location="libs" />
     <property name="build.dir"   value="build"/>
+    <property name="classes.dir"   value="${build.dir}/classes"/>
+    <property name="src_gen.dir"   value="src_gen"/>
 
     <path id="classpath">
         <fileset dir="${lib.dir}" includes="**/*.jar"/>
@@ -10,20 +12,13 @@
 
     <target name="compile">
         <mkdir dir="build/classes"/>
-        <javac srcdir="src" destdir="build/classes" classpathref="classpath" includeantruntime="false"/>
+        <javac srcdir="src" destdir="${classes.dir}" classpathref="classpath" includeantruntime="false">
+            <compilerarg line="-s ${src_gen.dir}" />
+        </javac>
     </target>
 
-    <target name="jar" depends="compile">
-        <mkdir dir="${build.dir}/jar"/>
-        <jar destfile="${build.dir}/jar/${ant.project.name}.jar" basedir="${build.dir}/classes">
-            <manifest>
-                <attribute name="Main-Class" value="${ant.project.name}.Main"/>
-            </manifest>
-        </jar>
-    </target>
-
-    <target name="run" depends="jar">
-        <java classname="rareshroom.Main" classpath="${build.dir}/classes:${lib.dir}/truffle-api.jar">
+    <target name="run" depends="compile">
+        <java classname="rareshroom.EntryPoint" classpath="${classes.dir}:${lib.dir}/truffle-api.jar">
 <!--            <arg line="&#45;&#45;module-path=/home/octavel/PhD_Programs/my_programs/rareshroom/libs/truffle-api.jar"/>-->
 <!--            <arg line="&#45;&#45;add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"/>-->
 <!--            <arg line="&#45;&#45;add-opens=org.graalvm.truffle/com.oracle.truffle.api.interop=ALL-UNNAMED"/>-->
@@ -33,5 +28,6 @@
 
     <target name="clean">
         <delete dir="${build.dir}/"/>
+        <delete dir="${src_gen.dir}/"/>
     </target>
 </project>

@@ -2,7 +2,7 @@ package rareshroom;
 
 import rareshroom.parser.ShroomParser;
 
-public class Main {
+public class EntryPoint {
     static public void main(String[] args) {
         arithmeticAsserts();
     }

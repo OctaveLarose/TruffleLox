@@ -1,24 +1,18 @@
 package rareshroom.nodes.arithmetic;
 
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.Specialization;
 import rareshroom.nodes.BinaryExprNode;
-import rareshroom.nodes.ExpressionNode;
 
-public class AddNode extends BinaryExprNode {
-    @Child private ExpressionNode left;
-    @Child private ExpressionNode right;
-
-    public AddNode(ExpressionNode left, ExpressionNode right) {
-        super();
-        this.left = left;
-        this.right = right;
+@GenerateNodeFactory
+public abstract class AddNode extends BinaryExprNode {
+    @Specialization(rewriteOn = ArithmeticException.class)
+    public long executeLong(long left, long right) {
+        return Math.addExact(left, right);
     }
 
-    @Override
-    public Object executeGeneric() {
-        return executeLong(); // TODO so there shouldn't be any need to implement it as AddNode should be abstract itself, and generate a specialized class
-    }
-
-    public long executeLong() {
-        return Math.addExact(left.executeLong(), right.executeLong());
+    @Specialization(replaces = "executeLong")
+    public double executeDouble(double left, double right) {
+        return left + right;
     }
 }

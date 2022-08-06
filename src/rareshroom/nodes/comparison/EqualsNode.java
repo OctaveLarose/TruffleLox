@@ -1,25 +1,24 @@
 package rareshroom.nodes.comparison;
 
+import com.oracle.truffle.api.dsl.GenerateNodeFactory;
+import com.oracle.truffle.api.dsl.Specialization;
 import rareshroom.nodes.BinaryExprNode;
-import rareshroom.nodes.ExpressionNode;
 
-public class EqualsNode extends BinaryExprNode {
+@GenerateNodeFactory
+public abstract class EqualsNode extends BinaryExprNode {
 
-    @Child private ExpressionNode left;
-    @Child private ExpressionNode right;
-
-    public EqualsNode(ExpressionNode left, ExpressionNode right) {
-        super();
-        this.left = left;
-        this.right = right;
+    @Specialization
+    public boolean doLong(long left, long right) {
+        return left == right;
     }
 
-    public boolean doLong() {
-        return left.executeLong() == right.executeLong();
+    @Specialization
+    public boolean doDouble(double left, double right) {
+        return left == right;
     }
 
-    @Override
-    public Object executeGeneric() {
-        return doLong();
+    @Specialization
+    public boolean doObject(Object left, Object right) {
+        return left == right;
     }
 }
