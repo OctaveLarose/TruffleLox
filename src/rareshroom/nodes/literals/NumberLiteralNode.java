@@ -1,14 +1,11 @@
 package rareshroom.nodes.literals;
 
+// TODO split into an IntLiteralNode and a DoubleLiteralNode to differentiate them
 public class NumberLiteralNode extends LiteralNode {
-    long value; // TODO make that a double probably
+    private final double value;
 
-    public NumberLiteralNode(long value) {
+    public NumberLiteralNode(double value) {
         this.value = value;
-    }
-
-    public long executeLong() {
-        return this.value;
     }
 
     public Object executeGeneric() {

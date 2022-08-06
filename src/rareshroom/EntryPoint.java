@@ -25,7 +25,8 @@ public class EntryPoint {
 
         // Division
         arithmeticAssert("18 / 3 == 6");
-        arithmeticAssert("1783 / 3 == 594"); // You should not be valid though. Needs to handle doubles
+        arithmeticAssert("1783 / 3 == 30311 / 51");
+        arithmeticAssert("2377 / 4 == 594.25");
         arithmeticAssert("163 * 5 + 100 / 4 - 12 * 2 + 145 == 961");
         arithmeticAssert("163 * (5 + 100 / 4) - 12 * (2 + 145) == 3126");
 

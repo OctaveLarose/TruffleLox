@@ -17,8 +17,6 @@ public class ShroomLexer {
         this.tokens = new ArrayList<>();
     }
 
-    private static final String[] literalNames = new String[] {null, "+", "-", "*", "/", "=", ";"};
-
     private char peek() {
         if (this.currentIdx >= this.sourceStr.length()) return 0;
         return this.sourceStr.charAt(this.currentIdx);
@@ -46,7 +44,7 @@ public class ShroomLexer {
             while (isDigit(peek())) advance();
         }
 
-        addToken(TokenType.NUMBER, Long.parseLong(sourceStr.substring(this.symStartIdx, this.currentIdx)));
+        addToken(TokenType.NUMBER, Double.parseDouble(sourceStr.substring(this.symStartIdx, this.currentIdx)));
     }
 
     private void addToken(Token.TokenType tokenType) {

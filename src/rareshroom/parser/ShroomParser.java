@@ -107,7 +107,7 @@ public class ShroomParser {
 
     private ExpressionNode primary() throws ParseError {
         if (match(TokenType.NUMBER)) {
-            return new NumberLiteralNode((Long) previous().literal);
+            return new NumberLiteralNode((Double) previous().literal);
         } else if (match(TokenType.PAREN_OPEN)) {
             ExpressionNode expr = expression();
             if (!match(TokenType.PAREN_CLOSE))
