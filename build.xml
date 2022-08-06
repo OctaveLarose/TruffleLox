@@ -23,7 +23,12 @@
     </target>
 
     <target name="run" depends="jar">
-        <java jar="${build.dir}/jar/${ant.project.name}.jar" fork="true"/>
+        <java classname="rareshroom.Main" classpath="${build.dir}/classes:${lib.dir}/truffle-api.jar">
+<!--            <arg line="&#45;&#45;module-path=/home/octavel/PhD_Programs/my_programs/rareshroom/libs/truffle-api.jar"/>-->
+<!--            <arg line="&#45;&#45;add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"/>-->
+<!--            <arg line="&#45;&#45;add-opens=org.graalvm.truffle/com.oracle.truffle.api.interop=ALL-UNNAMED"/>-->
+<!--            <arg line="&#45;&#45;add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED"/>-->
+        </java>
     </target>
 
     <target name="clean">
