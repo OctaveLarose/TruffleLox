@@ -75,6 +75,22 @@ public class ShroomLexer {
                         addToken(TokenType.EQUAL);
                     }
                 }
+                case '<' -> {
+                    if (this.peek() == '=') {
+                        addToken(TokenType.LESSER_EQUALS_THAN);
+                        advance();
+                    } else {
+                        addToken(TokenType.LESSER_THAN);
+                    }
+                }
+                case '>' -> {
+                    if (this.peek() == '=') {
+                        addToken(TokenType.GREATER_EQUALS_THAN);
+                        advance();
+                    } else {
+                        addToken(TokenType.GREATER_THAN);
+                    }
+                }
                 case '!' -> {
                     if (this.peek() == '=') {
                         addToken(TokenType.NOT_EQUALS);

@@ -5,8 +5,7 @@ import rareshroom.nodes.arithmetic.AddNodeFactory;
 import rareshroom.nodes.arithmetic.DivNodeFactory;
 import rareshroom.nodes.arithmetic.MultNodeFactory;
 import rareshroom.nodes.arithmetic.SubNodeFactory;
-import rareshroom.nodes.comparison.EqualsNodeFactory;
-import rareshroom.nodes.comparison.NotEqualsNodeFactory;
+import rareshroom.nodes.comparison.*;
 import rareshroom.nodes.literals.NumberLiteralNode;
 
 import java.util.List;
@@ -17,7 +16,7 @@ import static rareshroom.parser.Token.TokenType;
     Grammar:
 
     expr ->     compare
-    compare ->  term ("==" term)?
+    compare ->  term (("==" | "<" | "<=" | ">" | ">=") term)?
     term ->     factor (( "+" | "-" ) factor)*
     factor ->   primary (( "*" | "/" ) primary)*
     primary ->  NUMBER
@@ -57,14 +56,19 @@ public class ShroomParser {
     private ExpressionNode compare() throws ParseError {
         ExpressionNode expr = term();
 
-        if (match(TokenType.DOUBLE_EQUALS, TokenType.NOT_EQUALS)) {
+        if (match(TokenType.DOUBLE_EQUALS, TokenType.NOT_EQUALS,
+                TokenType.GREATER_THAN, TokenType.GREATER_EQUALS_THAN,
+                TokenType.LESSER_THAN, TokenType.LESSER_EQUALS_THAN)) {
             TokenType operatorType = previous().type;
             ExpressionNode arg = term();
 
-            if (operatorType == TokenType.DOUBLE_EQUALS) {
-                expr = EqualsNodeFactory.create(expr, arg);
-            } else {
-                expr = NotEqualsNodeFactory.create(expr, arg);
+            switch (operatorType) {
+                case DOUBLE_EQUALS -> expr = EqualsNodeFactory.create(expr, arg);
+                case GREATER_THAN -> expr = GreaterThanNodeFactory.create(expr, arg);
+                case GREATER_EQUALS_THAN -> expr = GreaterOrEqualsToNodeFactory.create(expr, arg);
+                case LESSER_THAN -> expr = LesserThanNodeFactory.create(expr, arg);
+                case LESSER_EQUALS_THAN -> expr = LesserOrEqualsToNodeFactory.create(expr, arg);
+                case EQUAL -> expr = NotEqualsNodeFactory.create(expr, arg);
             }
         }
 
