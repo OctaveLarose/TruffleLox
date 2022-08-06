@@ -4,9 +4,9 @@ public class Token {
     enum TokenType {
         MINUS, PLUS, SLASH, STAR,
         PAREN_OPEN, PAREN_CLOSE,
-        EQUAL,
+        EQUAL, DOUBLE_EQUALS, NOT_EQUALS,
         NUMBER,
-        SEMICOLON,
+        SEMICOLON, BANG,
         EOF
     }
 

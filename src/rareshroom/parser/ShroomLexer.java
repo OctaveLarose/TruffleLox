@@ -69,21 +69,35 @@ public class ShroomLexer {
                 case '/' -> addToken(TokenType.SLASH);
                 case '(' -> addToken(TokenType.PAREN_OPEN);
                 case ')' -> addToken(TokenType.PAREN_CLOSE);
+                case '=' -> {
+                    if (this.peek() == '=') {
+                        addToken(TokenType.DOUBLE_EQUALS);
+                        advance();
+                    } else {
+                        addToken(TokenType.EQUAL);
+                    }
+                }
+                case '!' -> {
+                    if (this.peek() == '=') {
+                        addToken(TokenType.NOT_EQUALS);
+                        advance();
+                    } else {
+                        addToken(TokenType.BANG);
+                    }
+                }
                 case ' ', '\t' -> {}
-                default -> nonPrimitive(c);
+                default -> {
+                    if (isDigit(c)) {
+                        number();
+                    } else {
+                        throw new ParseError("Unknown character : " + c);
+                    }
+                }
             }
         }
         this.symStartIdx = this.currentIdx;
         addToken(TokenType.EOF);
         return tokens;
-    }
-
-    private void nonPrimitive(char currentChar) throws ParseError {
-        if (isDigit(currentChar)) {
-            number();
-        } else {
-            throw new ParseError("Unknown character : " + currentChar);
-        }
     }
 }
 

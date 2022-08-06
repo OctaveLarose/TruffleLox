@@ -1,16 +1,28 @@
 package rareshroom.parser;
 
 import rareshroom.nodes.ExpressionNode;
-import rareshroom.nodes.IntLiteralNode;
 import rareshroom.nodes.arithmetic.AddNode;
 import rareshroom.nodes.arithmetic.DivNode;
 import rareshroom.nodes.arithmetic.MultNode;
 import rareshroom.nodes.arithmetic.SubstractNode;
+import rareshroom.nodes.comparison.EqualsNode;
+import rareshroom.nodes.comparison.NotEqualsNode;
+import rareshroom.nodes.literals.NumberLiteralNode;
 
 import java.util.List;
 
 import static rareshroom.parser.Token.TokenType;
 
+/*
+    Grammar:
+
+    expr ->     compare
+    compare ->  term ("==" term)?
+    term ->     factor (( "+" | "-" ) factor)*
+    factor ->   primary (( "*" | "/" ) primary)*
+    primary ->  NUMBER
+                | "(" expr ")"
+ */
 public class ShroomParser {
     private final String sourceStr;
 
@@ -39,7 +51,24 @@ public class ShroomParser {
     }
 
     private ExpressionNode expression() throws ParseError {
-        return term();
+        return compare();
+    }
+
+    private ExpressionNode compare() throws ParseError {
+        ExpressionNode expr = term();
+
+        if (match(TokenType.DOUBLE_EQUALS, TokenType.NOT_EQUALS)) {
+            TokenType operatorType = previous().type;
+            ExpressionNode arg = term();
+
+            if (operatorType == TokenType.DOUBLE_EQUALS) {
+                expr = new EqualsNode(expr, arg);
+            } else {
+                expr = new NotEqualsNode(expr, arg);
+            }
+        }
+
+        return expr;
     }
 
     private ExpressionNode term() throws ParseError {
@@ -49,9 +78,9 @@ public class ShroomParser {
             TokenType operatorType = previous().type;
             ExpressionNode right = factor();
 
-            if (operatorType == TokenType.PLUS)
+            if (operatorType == TokenType.PLUS) {
                 expr = new AddNode(expr, right);
-            else if (operatorType == TokenType.MINUS) {
+            } else if (operatorType == TokenType.MINUS) {
                 expr = new SubstractNode(expr, right);
             }
         }
@@ -78,7 +107,7 @@ public class ShroomParser {
 
     private ExpressionNode primary() throws ParseError {
         if (match(TokenType.NUMBER)) {
-            return new IntLiteralNode((Long) previous().literal);
+            return new NumberLiteralNode((Long) previous().literal);
         } else if (match(TokenType.PAREN_OPEN)) {
             ExpressionNode expr = expression();
             if (!match(TokenType.PAREN_CLOSE))
