@@ -8,6 +8,9 @@ public class NumberLiteralNode extends LiteralNode {
         this.value = value;
     }
 
+    public double executeDouble() {
+        return this.value;
+    }
     public Object executeGeneric() {
         return this.value;
     }

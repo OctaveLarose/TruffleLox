@@ -9,9 +9,9 @@ public class LanguageTests {
     }
 
     static public void runTests() {
-        arithmeticAsserts();
+        arithmeticTests();
     }
-    static public void arithmeticAsserts() {
+    static public void arithmeticTests() {
         // Addition, substraction
         arithmeticAssert("13 + 42 == 55");
         arithmeticAssert("1 + 55 + 3812 == 3868");
@@ -42,15 +42,27 @@ public class LanguageTests {
         arithmeticAssert("22 > 21");
         arithmeticAssert("22 >= 21");
         arithmeticAssert("22 >= 22");
+
+        // Not
+        arithmeticAssert("!(22 >= 10000) == (10 > 5)");
+
+        // Negate
+        arithmeticAssert("-(22 * 3) == ---(22 * 3)");
+        arithmeticAssert("--((22 * 3)) == 22 * 3");
+        arithmeticAssert("-32.8 == -8.2 * 4");
+    }
+
+    static public void invalidParsingTests() {
+        ; // TODO
     }
 
     static private void arithmeticAssert(String input) {
         System.out.print(input);
         Object output = run(input);
         if (output instanceof Boolean && (boolean) output) {
-            System.out.print(" - OK\n");
+            System.out.print("\u001B[32m - OK\u001B[0m\n");
         } else {
-            System.out.print(" - ERROR\n");
+            System.out.print("\u001B[31m - ERROR\u001B[0m\n");
         }
     }
 }

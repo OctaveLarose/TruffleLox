@@ -18,7 +18,8 @@ import static rareshroom.parser.Token.TokenType;
     expr ->     compare
     compare ->  term (("==" | "<" | "<=" | ">" | ">=") term)?
     term ->     factor (( "+" | "-" ) factor)*
-    factor ->   primary (( "*" | "/" ) primary)*
+    factor ->   unary (( "*" | "/" ) unary)*
+    unary ->    ("!" | "-") unary | primary
     primary ->  NUMBER
                 | "(" expr ")"
  */
@@ -68,7 +69,7 @@ public class ShroomParser {
                 case GREATER_EQUALS_THAN -> expr = GreaterOrEqualsToNodeFactory.create(expr, arg);
                 case LESSER_THAN -> expr = LesserThanNodeFactory.create(expr, arg);
                 case LESSER_EQUALS_THAN -> expr = LesserOrEqualsToNodeFactory.create(expr, arg);
-                case EQUAL -> expr = NotEqualsNodeFactory.create(expr, arg);
+                case NOT_EQUALS -> expr = NotEqualsNodeFactory.create(expr, arg);
             }
         }
 
@@ -82,10 +83,9 @@ public class ShroomParser {
             TokenType operatorType = previous().type;
             ExpressionNode right = factor();
 
-            if (operatorType == TokenType.PLUS) {
-                expr = AddNodeFactory.create(expr, right);
-            } else if (operatorType == TokenType.MINUS) {
-                expr = SubNodeFactory.create(expr, right);
+            switch (operatorType) {
+                case PLUS -> expr = AddNodeFactory.create(expr, right);
+                case MINUS -> expr = SubNodeFactory.create(expr, right);
             }
         }
 
@@ -93,11 +93,11 @@ public class ShroomParser {
     }
 
     private ExpressionNode factor() throws ParseError {
-        ExpressionNode expr = primary();
+        ExpressionNode expr = unary();
 
         while (match(TokenType.STAR, TokenType.SLASH)) {
             TokenType operatorType = previous().type;
-            ExpressionNode right = primary();
+            ExpressionNode right = unary();
 
             if (operatorType == TokenType.STAR)
                 expr = MultNodeFactory.create(expr, right);
@@ -107,6 +107,27 @@ public class ShroomParser {
         }
 
         return expr;
+    }
+
+    private ExpressionNode unary() throws ParseError {
+        if (match(TokenType.BANG, TokenType.MINUS)) {
+            TokenType operatorType = previous().type;
+            switch (operatorType) {
+                case BANG -> { return LogicalNotNodeFactory.create(unary()); }
+                case MINUS -> {
+                    ExpressionNode unary = unary();
+                    if (unary instanceof NumberLiteralNode) {
+                        double value = ((NumberLiteralNode) unary).executeDouble();
+                        return NegateNodeFactory.create(new NumberLiteralNode(-value));
+                    } else {
+                        return NegateNodeFactory.create(unary);
+                    }
+                }
+                default -> throw new ParseError("Should be unreachable");
+            }
+        } else {
+            return primary();
+        }
     }
 
     private ExpressionNode primary() throws ParseError {

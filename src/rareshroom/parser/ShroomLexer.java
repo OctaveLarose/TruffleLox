@@ -62,17 +62,17 @@ public class ShroomLexer {
             char c = advance();
             switch (c) {
                 case '+' -> addToken(TokenType.PLUS);
-                case '-' -> addToken(TokenType.MINUS);
                 case '*' -> addToken(TokenType.STAR);
                 case '/' -> addToken(TokenType.SLASH);
                 case '(' -> addToken(TokenType.PAREN_OPEN);
                 case ')' -> addToken(TokenType.PAREN_CLOSE);
+                case '-' -> addToken(TokenType.MINUS);
                 case '=' -> {
                     if (this.peek() == '=') {
                         addToken(TokenType.DOUBLE_EQUALS);
                         advance();
                     } else {
-                        addToken(TokenType.EQUAL);
+                        addToken(TokenType.EQUALS);
                     }
                 }
                 case '<' -> {
