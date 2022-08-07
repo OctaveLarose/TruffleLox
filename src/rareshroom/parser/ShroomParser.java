@@ -6,10 +6,10 @@ import rareshroom.nodes.arithmetic.DivNodeFactory;
 import rareshroom.nodes.arithmetic.MultNodeFactory;
 import rareshroom.nodes.arithmetic.SubNodeFactory;
 import rareshroom.nodes.comparison.*;
-import rareshroom.nodes.literals.FalseLiteral;
-import rareshroom.nodes.literals.NilLiteral;
+import rareshroom.nodes.literals.FalseLiteralNode;
+import rareshroom.nodes.literals.NilLiteralNode;
 import rareshroom.nodes.literals.NumberLiteralNode;
-import rareshroom.nodes.literals.TrueLiteral;
+import rareshroom.nodes.literals.TrueLiteralNode;
 
 import java.util.List;
 
@@ -161,9 +161,9 @@ public class ShroomParser {
 
         switch (currentToken.type) {
             case NUMBER -> { return new NumberLiteralNode((Double) previous().literal); }
-            case TRUE -> { return new TrueLiteral(); }
-            case FALSE -> { return new FalseLiteral(); }
-            case NIL -> { return new NilLiteral(); }
+            case TRUE -> { return new TrueLiteralNode(); }
+            case FALSE -> { return new FalseLiteralNode(); }
+            case NIL -> { return NilLiteralNode.NIL_VALUE; }
             case PAREN_OPEN -> {
                 ExpressionNode expr = expression();
                 if (!match(TokenType.PAREN_CLOSE))

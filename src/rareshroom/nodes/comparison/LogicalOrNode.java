@@ -9,6 +9,6 @@ public abstract class LogicalOrNode extends BinaryExprNode {
 
     @Specialization
     public boolean doBool(boolean left, boolean right) {
-        return left || right; // TODO Need to set up some basic truthy rules, aka make null falsey and everything else truthy
+        return left || right;
     }
 }

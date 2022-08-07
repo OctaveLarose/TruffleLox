@@ -1,8 +1,8 @@
 package rareshroom.nodes.literals;
 
-public class TrueLiteral extends LiteralNode {
+public class FalseLiteralNode extends LiteralNode {
     @Override
     public Object executeGeneric() {
-        return true;
+        return false;
     }
 }
