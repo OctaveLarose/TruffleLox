@@ -6,7 +6,10 @@ import rareshroom.nodes.arithmetic.DivNodeFactory;
 import rareshroom.nodes.arithmetic.MultNodeFactory;
 import rareshroom.nodes.arithmetic.SubNodeFactory;
 import rareshroom.nodes.comparison.*;
+import rareshroom.nodes.literals.FalseLiteral;
+import rareshroom.nodes.literals.NilLiteral;
 import rareshroom.nodes.literals.NumberLiteralNode;
+import rareshroom.nodes.literals.TrueLiteral;
 
 import java.util.List;
 
@@ -15,8 +18,10 @@ import static rareshroom.parser.Token.TokenType;
 /*
     Grammar:
 
-    expr ->     compare
-    compare ->  term (("==" | "<" | "<=" | ">" | ">=") term)?
+    expr ->     orExpr
+    orExpr ->  andExpr ( "or" andExpr )* ;
+    andExpr -> compare ( "and" compare )* ;
+    compare ->  term (("==" | "!=" | "<" | "<=" | ">" | ">=") term)? // I think this guy should be split
     term ->     factor (( "+" | "-" ) factor)*
     factor ->   unary (( "*" | "/" ) unary)*
     unary ->    ("!" | "-") unary | primary
@@ -51,8 +56,29 @@ public class ShroomParser {
     }
 
     private ExpressionNode expression() throws ParseError {
-        return compare();
+        return orExpr();
     }
+
+    private ExpressionNode orExpr() throws ParseError {
+        ExpressionNode expr = andExpr();
+
+        while (match(TokenType.OR)) {
+            expr = LogicalOrNodeFactory.create(expr, andExpr());
+        }
+
+        return expr;
+    }
+
+    private ExpressionNode andExpr() throws ParseError {
+        ExpressionNode expr = compare();
+
+        while (match(TokenType.AND)) {
+            expr = LogicalAndNodeFactory.create(expr, compare());
+        }
+
+        return expr;
+    }
+
 
     private ExpressionNode compare() throws ParseError {
         ExpressionNode expr = term();
@@ -131,15 +157,20 @@ public class ShroomParser {
     }
 
     private ExpressionNode primary() throws ParseError {
-        if (match(TokenType.NUMBER)) {
-            return new NumberLiteralNode((Double) previous().literal);
-        } else if (match(TokenType.PAREN_OPEN)) {
-            ExpressionNode expr = expression();
-            if (!match(TokenType.PAREN_CLOSE))
-                throw new ParseError("Unclosed parentheses");
-            return expr;
-        } else {
-            throw new ParseError("Invalid expression");
+        Token currentToken = advance();
+
+        switch (currentToken.type) {
+            case NUMBER -> { return new NumberLiteralNode((Double) previous().literal); }
+            case TRUE -> { return new TrueLiteral(); }
+            case FALSE -> { return new FalseLiteral(); }
+            case NIL -> { return new NilLiteral(); }
+            case PAREN_OPEN -> {
+                ExpressionNode expr = expression();
+                if (!match(TokenType.PAREN_CLOSE))
+                    throw new ParseError("Unclosed parentheses");
+                return expr;
+            }
+            default -> throw new ParseError("Invalid expression");
         }
     }
 
@@ -156,9 +187,9 @@ public class ShroomParser {
         return peek().type == type;
     }
 
-    private void advance() {
+    private Token advance() {
         if (!isAtEnd()) currentIdx++;
-//        return previous();
+        return previous();
     }
     private Token previous() {
         return tokens.get(currentIdx - 1);

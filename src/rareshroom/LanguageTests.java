@@ -10,6 +10,7 @@ public class LanguageTests {
 
     static public void runTests() {
         arithmeticTests();
+        logicTests();
     }
     static public void arithmeticTests() {
         // Addition, substraction
@@ -43,16 +44,39 @@ public class LanguageTests {
         arithmeticAssert("22 >= 21");
         arithmeticAssert("22 >= 22");
 
-        // Not
-        arithmeticAssert("!(22 >= 10000) == (10 > 5)");
-
         // Negate
         arithmeticAssert("-(22 * 3) == ---(22 * 3)");
         arithmeticAssert("--((22 * 3)) == 22 * 3");
         arithmeticAssert("-32.8 == -8.2 * 4");
     }
 
+    static public void logicTests() {
+        // And
+        arithmeticAssert("!((22 >= 10000) and (100 != 1))");
+        arithmeticAssert("!(22 >= 10000 and 100 != 1)");
+        arithmeticAssert("true and true");
+        arithmeticAssert("!(true and false)");
+        arithmeticAssert("!(false and false)");
+        arithmeticAssert("!false and (1 > 0 and (3 * 4 == 12))");
+
+        // Or
+        arithmeticAssert("true or false");
+        arithmeticAssert("!(false or false)");
+
+        // Not
+        arithmeticAssert("!(22 >= 10000) == (10 > 5)");
+        arithmeticAssert("!false");
+        arithmeticAssert("!!true");
+
+        // Truthiness/falsiness TODO
+//        arithmeticAssert("false == nil");
+//        arithmeticAssert("(42 or 1)");
+    }
+
     static public void invalidParsingTests() {
+        // Invalid syntax
+
+        // Invalid semantics
         ; // TODO
     }
 

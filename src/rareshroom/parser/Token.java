@@ -7,7 +7,8 @@ public class Token {
         EQUALS,
         DOUBLE_EQUALS, NOT_EQUALS, GREATER_THAN, GREATER_EQUALS_THAN, LESSER_THAN, LESSER_EQUALS_THAN,
         NUMBER,
-        SEMICOLON, BANG,
+        TRUE, FALSE, NIL,
+        SEMICOLON, BANG, AND, OR,
         EOF
     }
 

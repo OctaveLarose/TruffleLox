@@ -1,7 +1,9 @@
 package rareshroom.parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static rareshroom.parser.Token.TokenType;
 
@@ -9,6 +11,15 @@ public class ShroomLexer {
     String sourceStr;
     int currentIdx;
     int symStartIdx;
+
+    private static final Map<String, TokenType> keywords = new HashMap<>()
+    {{
+        put("and",    TokenType.AND);
+        put("or",     TokenType.OR);
+        put("true",   TokenType.TRUE);
+        put("false",  TokenType.FALSE);
+        put("nil",    TokenType.NIL);
+    }};
 
     List<Token> tokens;
 
@@ -36,15 +47,12 @@ public class ShroomLexer {
         return c >= '0' && c <= '9';
     }
 
-    private void number() {
-        while (isDigit(peek())) advance();
+    private boolean isAlpha(char c) {
+        return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z');
+    }
 
-        if (peek() == '.' && isDigit(peekNext())) {
-            advance();
-            while (isDigit(peek())) advance();
-        }
-
-        addToken(TokenType.NUMBER, Double.parseDouble(sourceStr.substring(this.symStartIdx, this.currentIdx)));
+    private boolean isAlphaNumeric(char c) {
+        return isAlpha(c) || isDigit(c);
     }
 
     private void addToken(Token.TokenType tokenType) {
@@ -99,12 +107,14 @@ public class ShroomLexer {
                         addToken(TokenType.BANG);
                     }
                 }
-                case ' ', '\t' -> {}
+                case ' ', '\r', '\t' -> {}
                 default -> {
-                    if (isDigit(c)) {
+                    if (isAlpha(c)) {
+                        identifier();
+                    } else if (isDigit(c)) {
                         number();
                     } else {
-                        throw new ParseError("Unknown character : " + c);
+                        throw new ParseError("Unknown character: " + c);
                     }
                 }
             }
@@ -112,6 +122,32 @@ public class ShroomLexer {
         this.symStartIdx = this.currentIdx;
         addToken(TokenType.EOF);
         return tokens;
+    }
+
+    private void number() {
+        while (isDigit(peek())) advance();
+
+        if (peek() == '.' && isDigit(peekNext())) {
+            advance();
+            while (isDigit(peek())) advance();
+        }
+
+        addToken(TokenType.NUMBER, Double.parseDouble(sourceStr.substring(this.symStartIdx, this.currentIdx)));
+    }
+
+    private void identifier() throws ParseError {
+        int startIdx = this.symStartIdx;
+
+        while (isAlphaNumeric(peek())) {
+            advance();
+        }
+
+        String identifierStr = sourceStr.substring(startIdx, this.currentIdx);
+
+        TokenType tokenType = keywords.get(identifierStr);
+        if (tokenType == null)
+            throw new ParseError("Unknown identifier: " + identifierStr);
+        addToken(tokenType);
     }
 }
 
