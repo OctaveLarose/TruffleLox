@@ -1,6 +1,8 @@
 package rareshroom.parser;
 
 import rareshroom.nodes.ExpressionNode;
+import rareshroom.nodes.GlobalVariableNode;
+import rareshroom.nodes.SequenceNode;
 import rareshroom.nodes.arithmetic.AddNodeFactory;
 import rareshroom.nodes.arithmetic.DivNodeFactory;
 import rareshroom.nodes.arithmetic.MultNodeFactory;
@@ -11,6 +13,7 @@ import rareshroom.nodes.literals.NilLiteralNode;
 import rareshroom.nodes.literals.NumberLiteralNode;
 import rareshroom.nodes.literals.TrueLiteralNode;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static rareshroom.parser.Token.TokenType;
@@ -18,15 +21,20 @@ import static rareshroom.parser.Token.TokenType;
 /*
     Grammar:
 
-    expr ->     orExpr
-    orExpr ->  andExpr ( "or" andExpr )* ;
-    andExpr -> compare ( "and" compare )* ;
-    compare ->  term (("==" | "!=" | "<" | "<=" | ">" | ">=") term)? // I think this guy should be split
-    term ->     factor (( "+" | "-" ) factor)*
-    factor ->   unary (( "*" | "/" ) unary)*
-    unary ->    ("!" | "-") unary | primary
-    primary ->  NUMBER
-                | "(" expr ")"
+    program ->      statement* EOF
+    statement ->    expr ";"
+    expr ->         assignment
+    assignment ->   IDENTIFIER "=" assignment
+                    | orExpr
+    orExpr ->       andExpr ( "or" andExpr )* ;
+    andExpr ->      compare ( "and" compare )* ;
+    compare ->      term (("==" | "!=" | "<" | "<=" | ">" | ">=") term)? // I think this guy should be split
+    term ->         factor (( "+" | "-" ) factor)*
+    factor ->       unary (( "*" | "/" ) unary)*
+    unary ->        ("!" | "-") unary
+                    | primary
+    primary ->      NUMBER
+                    | "(" expr ")"
  */
 public class ShroomParser {
     private final String sourceStr;
@@ -48,14 +56,40 @@ public class ShroomParser {
         }
 
         try {
-            return expression(); // TODO make root node
+            return program(); // TODO make root node
         } catch (ParseError parseError) {
             System.err.println(parseError.getMessage());
             return null;
         }
     }
 
+    private ExpressionNode program() throws ParseError {
+        ArrayList<ExpressionNode> expressions = new ArrayList<>();
+        while (!isAtEnd()) {
+            expressions.add(statement());
+        }
+        return new SequenceNode(expressions);
+    }
+
+    private ExpressionNode statement() throws ParseError {
+        ExpressionNode expression = expression();
+
+        if (!match(TokenType.SEMICOLON))
+            throw new ParseError("Unterminated statement");
+
+        return expression;
+    }
+
     private ExpressionNode expression() throws ParseError {
+        return assignment();
+    }
+
+    private ExpressionNode assignment() throws ParseError {
+        if (match(TokenType.IDENTIFIER)) {
+            if (match(TokenType.EQUALS)) {
+                return new GlobalVariableNode(assignment());
+            }
+        }
         return orExpr();
     }
 
@@ -170,7 +204,7 @@ public class ShroomParser {
                     throw new ParseError("Unclosed parentheses");
                 return expr;
             }
-            default -> throw new ParseError("Invalid expression");
+            default -> throw new ParseError("Invalid expression: primary token of type " + currentToken.type);
         }
     }
 

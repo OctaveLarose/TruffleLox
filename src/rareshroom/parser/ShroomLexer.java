@@ -75,6 +75,7 @@ public class ShroomLexer {
                 case '(' -> addToken(TokenType.PAREN_OPEN);
                 case ')' -> addToken(TokenType.PAREN_CLOSE);
                 case '-' -> addToken(TokenType.MINUS);
+                case ';' -> addToken(TokenType.SEMICOLON);
                 case '=' -> {
                     if (this.peek() == '=') {
                         addToken(TokenType.DOUBLE_EQUALS);
@@ -135,7 +136,7 @@ public class ShroomLexer {
         addToken(TokenType.NUMBER, Double.parseDouble(sourceStr.substring(this.symStartIdx, this.currentIdx)));
     }
 
-    private void identifier() throws ParseError {
+    private void identifier() {
         int startIdx = this.symStartIdx;
 
         while (isAlphaNumeric(peek())) {
@@ -146,8 +147,9 @@ public class ShroomLexer {
 
         TokenType tokenType = keywords.get(identifierStr);
         if (tokenType == null)
-            throw new ParseError("Unknown identifier: " + identifierStr);
-        addToken(tokenType);
+            addToken(TokenType.IDENTIFIER, identifierStr);
+        else
+            addToken(tokenType);
     }
 }
 
