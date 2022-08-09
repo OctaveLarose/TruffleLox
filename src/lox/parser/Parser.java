@@ -202,7 +202,7 @@ public class Parser {
                     ExpressionNode unary = unary();
                     if (unary instanceof NumberLiteralNode) {
                         double value = ((NumberLiteralNode) unary).executeDouble();
-                        return NegateNodeFactory.create(new NumberLiteralNode(-value));
+                        return new NumberLiteralNode(-value);
                     } else {
                         return NegateNodeFactory.create(unary);
                     }

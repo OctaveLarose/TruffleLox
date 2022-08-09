@@ -38,6 +38,8 @@ public class ArithmeticTests extends ExpressionTests {
 
     @Test
     public void negate() {
+        assertTrue(runBool("-42 < 0;"));
+        assertTrue(runBool("0 < --42;"));
         assertTrue(runBool("-(22 * 3) == ---(22 * 3);"));
         assertTrue(runBool("--((22 * 3)) == 22 * 3;"));
         assertTrue(runBool("-32.8 == -8.2 * 4;"));
