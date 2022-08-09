@@ -68,7 +68,7 @@ public class Parser {
             System.err.println(exception.getMessage());
         }
 
-        return program(); // TODO make root node
+        return program();
     }
 
     private ExpressionNode program() throws ParseError {
@@ -93,7 +93,7 @@ public class Parser {
     }
 
     private ExpressionNode assignment() throws ParseError {
-        if (match(TokenType.IDENTIFIER)) { // TODO currently doesn't handle "var1 = var2 = 3", and it should
+        if (match(TokenType.IDENTIFIER)) {
             Token identifierToken = previous();
 
             if (match(TokenType.EQUALS)) {
