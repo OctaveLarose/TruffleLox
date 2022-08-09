@@ -20,7 +20,11 @@
     </target>
 
     <target name="run" depends="compile">
-        <java classname="lox.EntryPoint" classpathref="lox-cp"/>
+        <java classname="lox.EntryPoint" classpathref="lox-cp" jvm="/home/octavel/PhD_Programs/git_repos/graalvm-ce-java17-22.1.0/">
+<!--            <env key="JAVA_HOME" value="/home/octavel/PhD_Programs/git_repos/graalvm-ce-java17-22.1.0/" />-->
+            <jvmarg value="--add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"/>
+            <jvmarg value="--add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED"/>
+        </java>
     </target>
 
     <target name="unit-test">

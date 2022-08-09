@@ -13,6 +13,9 @@ import lox.nodes.literals.NilLiteralNode;
 import lox.nodes.literals.NumberLiteralNode;
 import lox.nodes.literals.TrueLiteralNode;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +49,22 @@ public class Parser {
 
     public Parser(String inputStr) {
         this.sourceStr = inputStr;
+    }
+
+    public Parser(Reader inputReader) {
+        String readerStr;
+        StringBuilder targetString = new StringBuilder();
+        int intValueOfChar;
+
+        try {
+            while ((intValueOfChar = inputReader.read()) != -1) // TODO remove this temporary ugly fix
+                targetString.append((char) intValueOfChar);
+            readerStr = targetString.toString();
+        } catch (IOException exception) {
+            System.err.println(exception.getMessage());
+            readerStr = "";
+        }
+        this.sourceStr = readerStr;
     }
 
     public ExpressionNode parse() throws ParseError {

@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="truffle">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/truffle-api.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/truffle-dsl-processor.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

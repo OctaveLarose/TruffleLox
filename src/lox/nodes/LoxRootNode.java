@@ -1,21 +1,23 @@
 package lox.nodes;
 
-import com.oracle.truffle.api.TruffleLanguage;
-import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.nodes.RootNode;
+import lox.LoxLanguage;
 
-public class LoxRootNode extends RootNode {
-    protected LoxRootNode(TruffleLanguage<?> language) {
-        super(language);
+public final class LoxRootNode extends RootNode {
+    @Child
+    LoxNode node;
+
+    public LoxRootNode(LoxNode node) {
+        super(LoxLanguage.getCurrent());
+        this.node = node;
     }
-
-    protected LoxRootNode(TruffleLanguage<?> language, FrameDescriptor frameDescriptor) {
-        super(language, frameDescriptor);
+    public LoxRootNode(LoxLanguage language) {
+        super(language);
     }
 
     @Override
     public Object execute(VirtualFrame frame) {
-        return null; // TODO
+        return node.executeGeneric();
     }
 }
