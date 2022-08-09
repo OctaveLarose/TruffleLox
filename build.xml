@@ -21,15 +21,6 @@
     </target>
 
     <target name="run" depends="compile">
-<!--        <exec executable="${graal_jvm.dir}/bin/java" spawn="true">-->
-<!--            <arg value="-Dtruffle.class.path.append=${classes.dir}"/>-->
-<!--            <arg value="&#45;&#45;add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"/>-->
-<!--            <arg value="&#45;&#45;add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED"/>-->
-<!--            <arg line="-classpath /home/octavel/PhD_Programs/my_programs/TruffleLox/build/classes:/home/octavel/PhD_Programs/my_programs/TruffleLox/libs/truffle-api.jar"/>-->
-
-<!--            <arg value="lox.EntryPoint"/>-->
-<!--            <arg value="-ea"/>-->
-<!--        </exec>-->
         <java classname="lox.EntryPoint" jvm="${graal_jvm.dir}/bin/java" fork="true">
             <classpath refid="lox-cp"/>
 
@@ -37,11 +28,10 @@
 
             <jvmarg value="--add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"/>
             <jvmarg value="--add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED"/>
-<!--            <jvmarg value="-ea"/>-->
         </java>
     </target>
 
-    <target name="unit-test">
+    <target name="unit-test" depends="compile">
         <junit printsummary="true" showoutput="true" outputtoformatters="true" fork="true" jvm="${graal_jvm.dir}/bin/java">
             <jvmarg line="-Dtruffle.class.path.append=${classes.dir}"/>
 
