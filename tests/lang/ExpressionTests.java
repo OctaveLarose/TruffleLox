@@ -1,18 +1,13 @@
 package lang;
 
+import org.graalvm.polyglot.Context;
 import org.junit.Ignore;
-import lox.parser.ParseError;
-import lox.parser.Parser;
 
 @Ignore
 public abstract class ExpressionTests {
+    private static final Context context = Context.create();
+
     protected boolean runBool(String sourceStr) {
-        try {
-            var parsedTree = new Parser(sourceStr).parse();
-            return (boolean) parsedTree.executeGeneric();
-        } catch (ParseError | ClassCastException e) {
-            System.err.println(e.getMessage());
-            return false;
-        }
+        return context.eval("tlox", sourceStr).asBoolean();
     }
 }

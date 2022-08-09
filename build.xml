@@ -5,6 +5,7 @@
     <property name="build.dir"   value="build"/>
     <property name="classes.dir"   value="${build.dir}/classes"/>
     <property name="src_gen.dir"   value="src_gen"/>
+    <property name="graal_jvm.dir"   value="/home/octavel/PhD_Programs/git_repos/graalvm-ce-java17-22.1.0/"/> <!-- Not exactly super flexible right now! -->
 
     <path id="lox-cp">
         <pathelement path="${classes.dir}"/>
@@ -20,15 +21,30 @@
     </target>
 
     <target name="run" depends="compile">
-        <java classname="lox.EntryPoint" classpathref="lox-cp" jvm="/home/octavel/PhD_Programs/git_repos/graalvm-ce-java17-22.1.0/">
-<!--            <env key="JAVA_HOME" value="/home/octavel/PhD_Programs/git_repos/graalvm-ce-java17-22.1.0/" />-->
+<!--        <exec executable="${graal_jvm.dir}/bin/java" spawn="true">-->
+<!--            <arg value="-Dtruffle.class.path.append=${classes.dir}"/>-->
+<!--            <arg value="&#45;&#45;add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"/>-->
+<!--            <arg value="&#45;&#45;add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED"/>-->
+<!--            <arg line="-classpath /home/octavel/PhD_Programs/my_programs/TruffleLox/build/classes:/home/octavel/PhD_Programs/my_programs/TruffleLox/libs/truffle-api.jar"/>-->
+
+<!--            <arg value="lox.EntryPoint"/>-->
+<!--            <arg value="-ea"/>-->
+<!--        </exec>-->
+        <java classname="lox.EntryPoint" jvm="${graal_jvm.dir}/bin/java" fork="true">
+            <classpath refid="lox-cp"/>
+
+            <jvmarg line="-Dtruffle.class.path.append=${classes.dir}"/>
+
             <jvmarg value="--add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"/>
             <jvmarg value="--add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED"/>
+<!--            <jvmarg value="-ea"/>-->
         </java>
     </target>
 
     <target name="unit-test">
-        <junit printsummary="true" showoutput="true" outputtoformatters="true" fork="true">
+        <junit printsummary="true" showoutput="true" outputtoformatters="true" fork="true" jvm="${graal_jvm.dir}/bin/java">
+            <jvmarg line="-Dtruffle.class.path.append=${classes.dir}"/>
+
             <jvmarg line="--add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"/>
             <jvmarg line="--add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED"/>
             <jvmarg line="--add-opens=org.graalvm.truffle/com.oracle.truffle.api.dsl=ALL-UNNAMED"/>

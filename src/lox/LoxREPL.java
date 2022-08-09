@@ -1,30 +1,28 @@
 package lox;
 
-import lox.nodes.ExpressionNode;
-import lox.parser.ParseError;
-import lox.parser.Parser;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
 
 public class LoxREPL {
     private final static String PROMPT = "> ";
 
+    private final static Context context = Context.create();
+
     public static void runLoop() {
         while (true) {
-            GlobalIO.print(PROMPT);
+            GlobalIO.print(PROMPT); // TODO can set up Truffle to specify IO for us, I believe
 
             String input = GlobalIO.getInput();
-            if (input == null)
+            if (input == null) {
                 return;
+            }
 
             // We terminate statements if they're unterminated for the sake of convenience
             if (input.charAt(input.length() - 1) != ';')
                 input = input.concat(";");
 
-            try {
-                ExpressionNode parsedTree = new Parser(input).parse();
-                GlobalIO.printLn(parsedTree.executeGeneric());
-            } catch (ParseError parseError) {
-                GlobalIO.printErrLn(parseError.getMessage());
-            }
+            Value value = context.eval("tlox", input);
+            GlobalIO.printLn(value);
         }
     }
 }
