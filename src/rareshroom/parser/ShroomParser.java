@@ -47,7 +47,7 @@ public class ShroomParser {
         this.sourceStr = inputStr;
     }
 
-    public ExpressionNode parse() {
+    public ExpressionNode parse() throws ParseError {
         ShroomLexer lexer = new ShroomLexer(this.sourceStr);
         try {
             this.tokens = lexer.getTokens();
@@ -55,12 +55,7 @@ public class ShroomParser {
             System.err.println(exception.getMessage());
         }
 
-        try {
-            return program(); // TODO make root node
-        } catch (ParseError parseError) {
-            System.err.println(parseError.getMessage());
-            return null;
-        }
+        return program(); // TODO make root node
     }
 
     private ExpressionNode program() throws ParseError {
