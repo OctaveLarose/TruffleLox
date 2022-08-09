@@ -20,14 +20,20 @@
         <javac srcdir="tests" destdir="${classes.dir}" classpathref="lox-cp" includeantruntime="false"/>
     </target>
 
+    <resources id="add-opens-truffle">
+        <string>--add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED</string>
+        <string>--add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED</string>
+        <string>--add-opens=org.graalvm.truffle/com.oracle.truffle.api.dsl=ALL-UNNAMED</string>
+    </resources>
+    <pathconvert property="add-opens-truffle" refid="add-opens-truffle" pathsep=" " />
+
     <target name="run" depends="compile">
         <java classname="lox.EntryPoint" jvm="${graal_jvm.dir}/bin/java" fork="true">
             <classpath refid="lox-cp"/>
 
             <jvmarg line="-Dtruffle.class.path.append=${classes.dir}"/>
 
-            <jvmarg value="--add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"/>
-            <jvmarg value="--add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED"/>
+            <jvmarg line="${add-opens-truffle}"/>
         </java>
     </target>
 
@@ -35,9 +41,7 @@
         <junit printsummary="true" showoutput="true" outputtoformatters="true" fork="true" jvm="${graal_jvm.dir}/bin/java">
             <jvmarg line="-Dtruffle.class.path.append=${classes.dir}"/>
 
-            <jvmarg line="--add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"/>
-            <jvmarg line="--add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED"/>
-            <jvmarg line="--add-opens=org.graalvm.truffle/com.oracle.truffle.api.dsl=ALL-UNNAMED"/>
+            <jvmarg line="${add-opens-truffle}"/>
 
             <classpath refid="lox-cp"/>
             <batchtest filtertrace="false">
