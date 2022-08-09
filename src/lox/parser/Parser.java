@@ -2,13 +2,16 @@ package lox.parser;
 
 import lox.nodes.ExpressionNode;
 import lox.nodes.GlobalVariableNode;
+import lox.nodes.SequenceNode;
+import lox.nodes.arithmetic.AddNodeFactory;
+import lox.nodes.arithmetic.DivNodeFactory;
+import lox.nodes.arithmetic.MultNodeFactory;
+import lox.nodes.arithmetic.SubNodeFactory;
+import lox.nodes.comparison.*;
 import lox.nodes.literals.FalseLiteralNode;
 import lox.nodes.literals.NilLiteralNode;
 import lox.nodes.literals.NumberLiteralNode;
 import lox.nodes.literals.TrueLiteralNode;
-import lox.nodes.SequenceNode;
-import lox.nodes.arithmetic.*;
-import lox.nodes.comparison.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +27,11 @@ import static lox.parser.Token.TokenType;
     assignment ->   IDENTIFIER "=" assignment
                     | orExpr
     orExpr ->       andExpr ( "or" andExpr )* ;
-    andExpr ->      compare ( "and" compare )* ;
-    compare ->      term (("==" | "!=" | "<" | "<=" | ">" | ">=") term)? // I think this guy should be split
-    term ->         factor (( "+" | "-" ) factor)*
-    factor ->       unary (( "*" | "/" ) unary)*
+    andExpr ->      equality ( "and" equality )* ;
+    equality ->     compare ( ( "!=" | "==" ) compare )* ;
+    compare ->      term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+    term ->         factor (( "-" | "+" ) factor)*
+    factor ->       unary (( "/" | "*" ) unary)*
     unary ->        ("!" | "-") unary
                     | primary
     primary ->      NUMBER
@@ -96,32 +100,44 @@ public class Parser {
     }
 
     private ExpressionNode andExpr() throws ParseError {
-        ExpressionNode expr = compare();
+        ExpressionNode expr = equality();
 
         while (match(TokenType.AND)) {
-            expr = LogicalAndNodeFactory.create(expr, compare());
+            expr = LogicalAndNodeFactory.create(expr, equality());
         }
 
         return expr;
     }
 
+    private ExpressionNode equality() throws ParseError {
+        ExpressionNode expr = compare();
+
+        if (match(TokenType.DOUBLE_EQUALS, TokenType.NOT_EQUALS)) {
+            TokenType operatorType = previous().type;
+            ExpressionNode arg = term();
+
+            switch (operatorType) {
+                case NOT_EQUALS -> expr = NotEqualsNodeFactory.create(expr, arg);
+                case DOUBLE_EQUALS -> expr = EqualsNodeFactory.create(expr, arg);
+            }
+        }
+
+        return expr;
+    }
 
     private ExpressionNode compare() throws ParseError {
         ExpressionNode expr = term();
 
-        if (match(TokenType.DOUBLE_EQUALS, TokenType.NOT_EQUALS,
-                TokenType.GREATER_THAN, TokenType.GREATER_EQUALS_THAN,
+        if (match(TokenType.GREATER_THAN, TokenType.GREATER_EQUALS_THAN,
                 TokenType.LESSER_THAN, TokenType.LESSER_EQUALS_THAN)) {
             TokenType operatorType = previous().type;
             ExpressionNode arg = term();
 
             switch (operatorType) {
-                case DOUBLE_EQUALS -> expr = EqualsNodeFactory.create(expr, arg);
                 case GREATER_THAN -> expr = GreaterThanNodeFactory.create(expr, arg);
                 case GREATER_EQUALS_THAN -> expr = GreaterOrEqualsToNodeFactory.create(expr, arg);
                 case LESSER_THAN -> expr = LesserThanNodeFactory.create(expr, arg);
                 case LESSER_EQUALS_THAN -> expr = LesserOrEqualsToNodeFactory.create(expr, arg);
-                case NOT_EQUALS -> expr = NotEqualsNodeFactory.create(expr, arg);
             }
         }
 
@@ -136,8 +152,8 @@ public class Parser {
             ExpressionNode right = factor();
 
             switch (operatorType) {
-                case PLUS -> expr = AddNodeFactory.create(expr, right);
                 case MINUS -> expr = SubNodeFactory.create(expr, right);
+                case PLUS -> expr = AddNodeFactory.create(expr, right);
             }
         }
 
@@ -151,10 +167,9 @@ public class Parser {
             TokenType operatorType = previous().type;
             ExpressionNode right = unary();
 
-            if (operatorType == TokenType.STAR)
-                expr = MultNodeFactory.create(expr, right);
-            else if (operatorType == TokenType.SLASH) {
-                expr = DivNodeFactory.create(expr, right);
+            switch (operatorType) {
+                case SLASH -> expr = DivNodeFactory.create(expr, right);
+                case STAR -> expr = MultNodeFactory.create(expr, right);
             }
         }
 
