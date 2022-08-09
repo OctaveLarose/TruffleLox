@@ -1,2 +1,2 @@
-# rareshroom
-Truffle-based implementation of... some language
+# TruffleLox
+Truffle-based implementation of the Lox language.
