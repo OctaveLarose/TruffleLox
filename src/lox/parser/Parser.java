@@ -1,20 +1,13 @@
 package lox.parser;
 
 import lox.nodes.ExpressionNode;
-import lox.nodes.GlobalVariableNode;
+import lox.nodes.VariableNode;
 import lox.nodes.SequenceNode;
-import lox.nodes.arithmetic.AddNodeFactory;
-import lox.nodes.arithmetic.DivNodeFactory;
-import lox.nodes.arithmetic.MultNodeFactory;
-import lox.nodes.arithmetic.SubNodeFactory;
+import lox.nodes.arithmetic.*; // Bad habit but useful in this context of generated classes
 import lox.nodes.comparison.*;
-import lox.nodes.literals.FalseLiteralNode;
-import lox.nodes.literals.NilLiteralNode;
-import lox.nodes.literals.NumberLiteralNode;
-import lox.nodes.literals.TrueLiteralNode;
+import lox.nodes.literals.*;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -100,9 +93,14 @@ public class Parser {
     }
 
     private ExpressionNode assignment() throws ParseError {
-        if (match(TokenType.IDENTIFIER)) {
+        if (match(TokenType.IDENTIFIER)) { // TODO currently doesn't handle "var1 = var2 = 3", and it should
+            Token identifierToken = previous();
+
             if (match(TokenType.EQUALS)) {
-                return new GlobalVariableNode(assignment());
+                return new VariableNode.VariableWriteNode((String) identifierToken.literal, assignment());
+            } else {
+                this.currentIdx--; // TODO remove this hack
+                return orExpr();
             }
         }
         return orExpr();
@@ -230,6 +228,7 @@ public class Parser {
                     throw new ParseError("Unclosed parentheses");
                 return expr;
             }
+            case IDENTIFIER -> { return new VariableNode.VariableReadNode((String)currentToken.literal); }
             default -> throw new ParseError("Invalid expression: primary token of type " + currentToken.type);
         }
     }
