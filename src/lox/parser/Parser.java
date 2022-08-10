@@ -6,6 +6,7 @@ import lox.nodes.SequenceNode;
 import lox.nodes.arithmetic.*; // Bad habit but useful in this context of generated classes
 import lox.nodes.comparison.*;
 import lox.nodes.literals.*;
+import lox.objects.Variable;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -93,17 +94,19 @@ public class Parser {
     }
 
     private ExpressionNode assignment() throws ParseError {
-        if (match(TokenType.IDENTIFIER)) {
-            Token identifierToken = previous();
+        ExpressionNode assignee = orExpr();
 
-            if (match(TokenType.EQUALS)) {
-                return new VariableNode.VariableWriteNode((String) identifierToken.literal, assignment());
-            } else {
-                this.currentIdx--; // TODO remove this hack
-                return orExpr();
+        if (match(TokenType.EQUALS)) {
+            ExpressionNode assignment = assignment();
+
+            if (assignee instanceof VariableNode) {
+                String varName = (((VariableNode)assignee).getLocalVariable().getName());
+                return new VariableNode.VariableWriteNode(new Variable(varName, assignment));
             }
+
+            throw new ParseError("Invalid assignment target");
         }
-        return orExpr();
+        return assignee;
     }
 
     private ExpressionNode orExpr() throws ParseError {
@@ -228,7 +231,7 @@ public class Parser {
                     throw new ParseError("Unclosed parentheses");
                 return expr;
             }
-            case IDENTIFIER -> { return new VariableNode.VariableReadNode((String)currentToken.literal); }
+            case IDENTIFIER -> { return new VariableNode.VariableReadNode(((String)currentToken.literal)); }
             default -> throw new ParseError("Invalid expression: primary token of type " + currentToken.type);
         }
     }
