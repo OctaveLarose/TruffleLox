@@ -43,6 +43,10 @@ public class Lexer {
         return this.sourceStr.charAt(this.currentIdx++);
     }
 
+    private boolean isAtEnd() {
+        return this.currentIdx >= sourceStr.length();
+    }
+
     private boolean isDigit(char c) {
         return c >= '0' && c <= '9';
     }
@@ -65,7 +69,7 @@ public class Lexer {
     }
 
     public List<Token> getTokens() throws ParseError {
-        while (this.currentIdx < sourceStr.length()) {
+        while (!isAtEnd()) {
             this.symStartIdx = this.currentIdx;
             char c = advance();
             switch (c) {
@@ -108,6 +112,7 @@ public class Lexer {
                         addToken(TokenType.BANG);
                     }
                 }
+                case '\"' -> string();
                 case ' ', '\r', '\t' -> {}
                 default -> {
                     if (isAlpha(c)) {
@@ -134,6 +139,20 @@ public class Lexer {
         }
 
         addToken(TokenType.NUMBER, Double.parseDouble(sourceStr.substring(this.symStartIdx, this.currentIdx)));
+    }
+
+    private void string() throws ParseError {
+        while (peek() != '\"' && !isAtEnd()) advance();
+
+        if (isAtEnd())
+            throw new ParseError("Unterminated string");
+
+        // The closing quotation mark
+        advance();
+
+        String literalString = sourceStr.substring(this.symStartIdx + 1, this.currentIdx - 1);
+        // plus and minus one to account for the quotation marks
+        addToken(TokenType.STRING, literalString);
     }
 
     private void identifier() {

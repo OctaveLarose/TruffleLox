@@ -20,6 +20,11 @@ public abstract class EqualsNode extends BinaryExprNode {
     }
 
     @Specialization
+    public boolean doString(String left, String right) {
+        return left.equals(right);
+    }
+
+    @Specialization
     public boolean doObject(Object left, Object right) {
         return left == right;
     }

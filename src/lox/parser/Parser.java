@@ -28,7 +28,8 @@ import static lox.parser.Token.TokenType;
     factor ->       unary (( "/" | "*" ) unary)*
     unary ->        ("!" | "-") unary
                     | primary
-    primary ->      NUMBER
+    primary ->      "true" | "false" | "nil"
+                    | NUMBER | STRING | IDENTIFIER
                     | "(" expr ")"
  */
 public class Parser {
@@ -60,12 +61,7 @@ public class Parser {
 
     public ExpressionNode parse() throws ParseError {
         Lexer lexer = new Lexer(this.sourceStr);
-        try {
-            this.tokens = lexer.getTokens();
-        } catch (ParseError exception) {
-            System.err.println(exception.getMessage());
-        }
-
+        this.tokens = lexer.getTokens();
         return program();
     }
 
@@ -218,10 +214,11 @@ public class Parser {
         Token currentToken = advance();
 
         switch (currentToken.type) {
-            case NUMBER -> { return new NumberLiteralNode((Double) previous().literal); }
             case TRUE -> { return new TrueLiteralNode(); }
             case FALSE -> { return new FalseLiteralNode(); }
             case NIL -> { return NilLiteralNode.NIL_VALUE; }
+            case NUMBER -> { return new NumberLiteralNode((Double) currentToken.literal); }
+            case STRING -> { return new StringLiteralNode((String) currentToken.literal); }
             case PAREN_OPEN -> {
                 ExpressionNode expr = expression();
                 if (!match(TokenType.PAREN_CLOSE))

@@ -6,6 +6,12 @@ import static org.junit.Assert.assertTrue;
 
 public class LogicTests extends ExpressionTests {
     @Test
+    public void equalsNonArithmetic() {
+        assertTrue(runBool("\"hello world\" == \"hello world\";"));
+        assertTrue(runBool("\"AbcD\" != \"abCd\";"));
+    }
+
+    @Test
     public void notEquals() {
         assertTrue(runBool("1 != 2;"));
         assertTrue(runBool("163 * 5 + 100 / 4 - 12 * 2 + 145 != 10000000000;"));
