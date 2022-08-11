@@ -1,5 +1,7 @@
 package lox;
 
+import lox.nodes.ExpressionNode;
+
 import java.util.HashMap;
 
 public final class GlobalScope {
@@ -20,4 +22,7 @@ public final class GlobalScope {
         return functions.get(name);
     }
 
+    public void setFunction(String name, int size, ExpressionNode block) {
+        functions.put(name, block);
+    }
 }

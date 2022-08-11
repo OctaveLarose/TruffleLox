@@ -4,8 +4,10 @@ import lox.nodes.*; // Bad habit but useful in this context of generated classes
 import lox.nodes.arithmetic.*;
 import lox.nodes.comparison.*;
 import lox.nodes.functions.FunctionCallNode;
+import lox.nodes.functions.FunctionDeclarationNode;
 import lox.nodes.functions.FunctionLookupNode;
 import lox.nodes.literals.*;
+import lox.nodes.statements.ReturnStmt;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -70,13 +72,59 @@ public class Parser {
     private ExpressionNode program() throws ParseError {
         ArrayList<ExpressionNode> expressions = new ArrayList<>();
         while (!isAtEnd()) {
-            var statement = statement();
-            expressions.add(statement);
+            var declaration = declaration();
+            expressions.add(declaration);
         }
         return new SequenceNode(expressions);
     }
 
+    private ExpressionNode declaration() throws ParseError {
+        if (match(TokenType.FUN)) {
+            return function();
+        }
+        return statement();
+    }
+
+    private ExpressionNode function() throws ParseError {
+        Token idToken = this.peek();
+
+        if (!match(TokenType.IDENTIFIER))
+            throw new ParseError("No identifier specified for function declaration");
+
+        if (!match(TokenType.PAREN_OPEN))
+            throw new ParseError("Expected a '(' before function arguments");
+
+        List<String> parameters = parameters();
+
+        if (!match(TokenType.CURLY_BRACKET_OPEN))
+            throw new ParseError("Expected a '{' to specify a function declaration");
+
+        ExpressionNode block = block();
+
+        return new FunctionDeclarationNode((String)idToken.literal, parameters, block);
+    }
+
     private ExpressionNode statement() throws ParseError {
+        if (match(TokenType.CURLY_BRACKET_OPEN))
+            return block();
+        else if (match(TokenType.RETURN))
+            return returnStmt();
+        else
+            return exprStatement();
+    }
+
+    private ExpressionNode block() throws ParseError {
+        List<ExpressionNode> declarations = new ArrayList<>();
+
+        while (!isAtEnd() && !match(TokenType.CURLY_BRACKET_CLOSE)) {
+            var declaration = declaration();
+            declarations.add(declaration);
+        }
+
+        return new BlockNode(declarations);
+    }
+
+    private ExpressionNode exprStatement() throws ParseError {
         ExpressionNode expression = expression();
 
         if (!match(TokenType.SEMICOLON))
@@ -254,6 +302,39 @@ public class Parser {
             throw new ParseError("Unterminated arguments declaration");
 
         return arguments;
+    }
+
+    private List<String> parameters() throws ParseError {
+        ArrayList<String> parameters = new ArrayList<>();
+        if (match(TokenType.PAREN_CLOSE))
+            return parameters;
+
+        while (!isAtEnd()) {
+            Token idToken = advance();
+            if (idToken.type != TokenType.IDENTIFIER)
+                throw new ParseError("Expected an identifier in parameters list, instead got " + idToken);
+            parameters.add((String) idToken.literal);
+
+            if (!match(TokenType.COMMA))
+                break;
+        }
+
+        if (!match(TokenType.PAREN_CLOSE))
+            throw new ParseError("Unterminated parameters declaration");
+
+        return parameters;
+    }
+
+    private ExpressionNode returnStmt() throws ParseError {
+        if (match(TokenType.SEMICOLON))
+            return new ReturnStmt(null);
+
+        ExpressionNode expr = expression();
+
+        if (!match(TokenType.SEMICOLON))
+            throw new ParseError("Unterminated return statement");
+
+        return new ReturnStmt(expr);
     }
 
     private boolean isAtEnd() {

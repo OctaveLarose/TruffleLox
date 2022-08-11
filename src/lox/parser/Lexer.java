@@ -19,6 +19,8 @@ public class Lexer {
         put("true",   TokenType.TRUE);
         put("false",  TokenType.FALSE);
         put("nil",    TokenType.NIL);
+        put("fun",    TokenType.FUN);
+        put("return",    TokenType.RETURN);
     }};
 
     List<Token> tokens;
@@ -78,6 +80,8 @@ public class Lexer {
                 case '/' -> addToken(TokenType.SLASH);
                 case '(' -> addToken(TokenType.PAREN_OPEN);
                 case ')' -> addToken(TokenType.PAREN_CLOSE);
+                case '{' -> addToken(TokenType.CURLY_BRACKET_OPEN);
+                case '}' -> addToken(TokenType.CURLY_BRACKET_CLOSE);
                 case '-' -> addToken(TokenType.MINUS);
                 case ';' -> addToken(TokenType.SEMICOLON);
                 case ',' -> addToken(TokenType.COMMA);

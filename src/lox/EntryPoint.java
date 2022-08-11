@@ -9,7 +9,7 @@ public class EntryPoint {
 //        LoxREPL.runLoop();
         ExpressionNode expr = null;
         try {
-            expr = new Parser("functionCall(1, 1 + 42, \"wow\");").parse();
+            expr = new Parser("fun returnThreeToTwoArgs(a, b) { return a + b + 3; } returnThree(3, 4) + 1;").parse();
         } catch (ParseError e) {
             throw new RuntimeException(e);
         }
