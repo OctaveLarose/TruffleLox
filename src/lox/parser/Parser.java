@@ -3,6 +3,8 @@ package lox.parser;
 import lox.nodes.*; // Bad habit but useful in this context of generated classes. TODO to be changed later though
 import lox.nodes.arithmetic.*;
 import lox.nodes.comparison.*;
+import lox.nodes.functions.FunctionCallNode;
+import lox.nodes.functions.FunctionLookupNode;
 import lox.nodes.literals.*;
 
 import java.io.IOException;
@@ -68,7 +70,8 @@ public class Parser {
     private ExpressionNode program() throws ParseError {
         ArrayList<ExpressionNode> expressions = new ArrayList<>();
         while (!isAtEnd()) {
-            expressions.add(statement());
+            var statement = statement();
+            expressions.add(statement);
         }
         return new SequenceNode(expressions);
     }
@@ -225,9 +228,32 @@ public class Parser {
                     throw new ParseError("Unclosed parentheses");
                 return expr;
             }
-            case IDENTIFIER -> { return VariableNodeFactory.VariableReadNodeGen.create(((String) currentToken.literal)); }
+            case IDENTIFIER -> {
+                if (match(TokenType.PAREN_OPEN)) { // TODO: should instead be handled in a call() function above
+                    List<ExpressionNode> arguments = arguments();
+                    return new FunctionCallNode(new FunctionLookupNode((String)currentToken.literal), arguments); // Shouldn't always have to look it up, but it's a start
+                }
+                return VariableNodeFactory.VariableReadNodeGen.create(((String) currentToken.literal)); }
             default -> throw new ParseError("Invalid expression: primary token of type " + currentToken.type);
         }
+    }
+
+    private List<ExpressionNode> arguments() throws ParseError {
+        ArrayList<ExpressionNode> arguments = new ArrayList<>();
+        if (match(TokenType.PAREN_CLOSE))
+            return arguments;
+
+        while (!isAtEnd()) {
+            ExpressionNode expr = expression();
+            arguments.add(expr);
+            if (!match(TokenType.COMMA))
+                break;
+        }
+
+        if (!match(TokenType.PAREN_CLOSE))
+            throw new ParseError("Unterminated arguments declaration");
+
+        return arguments;
     }
 
     private boolean isAtEnd() {

@@ -15,4 +15,10 @@ public abstract class AddNode extends BinaryExprNode {
     public double doDouble(double left, double right) {
         return left + right;
     }
+
+    @Specialization
+    public String doString(String left, String right) {
+        return left + right;
+    }
+
 }

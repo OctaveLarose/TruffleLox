@@ -1,12 +1,11 @@
-package lang;
+package lox.basic;
 
+import lox.ExpressionTestsBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class ArithmeticTests extends ExpressionTests {
-
-    public ArithmeticTests() {}
+public class ArithmeticOperatorTests extends ExpressionTestsBase {
 
     @Test
     public void plus() {
@@ -43,20 +42,5 @@ public class ArithmeticTests extends ExpressionTests {
         assertTrue(runBool("-(22 * 3) == ---(22 * 3);"));
         assertTrue(runBool("--((22 * 3)) == 22 * 3;"));
         assertTrue(runBool("-32.8 == -8.2 * 4;"));
-    }
-
-    @Test
-    public void greater() {
-        assertTrue(runBool("1 < 2;"));
-        assertTrue(runBool("42 <= 43;"));
-        assertTrue(runBool("43 <= 43;"));
-    }
-
-    @Test
-    public void lesser() {
-        assertTrue(runBool("1000 > 43;"));
-        assertTrue(runBool("22 > 21;"));
-        assertTrue(runBool("22 >= 21;"));
-        assertTrue(runBool("22 >= 22;"));
     }
 }

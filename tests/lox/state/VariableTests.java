@@ -1,10 +1,11 @@
-package lang;
+package lox.state;
 
+import lox.ExpressionTestsBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class VariableTests extends ExpressionTests {
+public class VariableTests extends ExpressionTestsBase {
     @Test
     public void variables() {
         assertTrue(runBool("var1 = 42; var1 == 42;"));

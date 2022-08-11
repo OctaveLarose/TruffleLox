@@ -1,22 +1,11 @@
-package lang;
+package lox.basic;
 
+import lox.ExpressionTestsBase;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-public class LogicTests extends ExpressionTests {
-    @Test
-    public void equalsNonArithmetic() {
-        assertTrue(runBool("\"hello world\" == \"hello world\";"));
-        assertTrue(runBool("\"AbcD\" != \"abCd\";"));
-    }
-
-    @Test
-    public void notEquals() {
-        assertTrue(runBool("1 != 2;"));
-        assertTrue(runBool("163 * 5 + 100 / 4 - 12 * 2 + 145 != 10000000000;"));
-    }
-
+public class BoolLogicTests extends ExpressionTestsBase {
     @Test
     public void and() {
         assertTrue(runBool("!((22 >= 10000) and (100 != 1));"));

@@ -80,6 +80,7 @@ public class Lexer {
                 case ')' -> addToken(TokenType.PAREN_CLOSE);
                 case '-' -> addToken(TokenType.MINUS);
                 case ';' -> addToken(TokenType.SEMICOLON);
+                case ',' -> addToken(TokenType.COMMA);
                 case '=' -> {
                     if (this.peek() == '=') {
                         addToken(TokenType.DOUBLE_EQUALS);

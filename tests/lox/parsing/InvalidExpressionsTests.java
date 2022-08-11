@@ -1,12 +1,13 @@
-package lang;
+package lox.parsing;
 
+import lox.ExpressionTestsBase;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
 @Ignore("Not ready yet")
-public class InvalidExpressionsTests extends ExpressionTests {
+public class InvalidExpressionsTests extends ExpressionTestsBase {
     @Test
     public void invalidSyntax() {
         assertTrue(runBool("1 == 1;"));; //TODO
