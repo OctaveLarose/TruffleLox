@@ -6,9 +6,9 @@ import lox.LoxLanguage;
 
 public final class LoxRootNode extends RootNode {
     @Child
-    LoxNode node;
+    ExpressionNode node;
 
-    public LoxRootNode(LoxNode node) {
+    public LoxRootNode(ExpressionNode node) {
         super(LoxLanguage.getCurrent());
         this.node = node;
     }
@@ -18,6 +18,6 @@ public final class LoxRootNode extends RootNode {
 
     @Override
     public Object execute(VirtualFrame frame) {
-        return node.executeGeneric();
+        return node.executeGeneric(frame);
     }
 }

@@ -1,13 +1,12 @@
 package lox.nodes;
 
+import com.oracle.truffle.api.dsl.NodeChild;
+import com.oracle.truffle.api.dsl.Specialization;
+import lox.LoxContext;
 import lox.objects.Variable;
 
-import java.util.HashMap;
-
 public abstract class VariableNode extends ExpressionNode {
-    protected Variable var;
-
-    static protected final HashMap<String, Object> variables = new HashMap<>(); // Ugly, but a start to handling state
+    protected Variable var; // TODO sort out the redundancies with name and ExpressionNode children, bit weird
 
     protected VariableNode(String name) {
         this.var = new Variable(name, null);
@@ -21,29 +20,30 @@ public abstract class VariableNode extends ExpressionNode {
         return this.var;
     }
 
-    // TODO Should be abstract later down the line, same for the Write version
-    public static class VariableReadNode extends VariableNode {
+    public abstract static class VariableReadNode extends VariableNode {
         public VariableReadNode(String name) {
             super(name);
             this.var = new Variable(name, null);
         }
 
-        @Override
-        public Object executeGeneric() {
-            return variables.get(this.var.getName());
+        @Specialization
+        public Object read() {
+            LoxContext context = LoxContext.get(this);
+            return context.globalScope.getVar(this.var.getName());
         }
     }
 
-    public static class VariableWriteNode extends VariableNode {
-        public VariableWriteNode(Variable var) {
-            super(var);
+    @NodeChild(value = "assignmentExpr", type = ExpressionNode.class)
+    public abstract static class VariableWriteNode extends VariableNode {
+        public VariableWriteNode(String name) {
+            super(name);
         }
 
-        @Override
-        public Object executeGeneric() {
-            Object writtenValue = this.var.getExpr().executeGeneric();
-            variables.put(this.var.getName(), writtenValue);
-            return writtenValue;
+        @Specialization
+        public Object write(Object value) {
+            LoxContext context = LoxContext.get(this);
+            context.globalScope.setVar(this.var.getName(), value);
+            return value;
         }
     }
 }

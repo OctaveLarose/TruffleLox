@@ -6,5 +6,4 @@ import lox.LoxTypeSystem;
 
 @TypeSystemReference(LoxTypeSystem.class)
 public abstract class LoxNode extends Node {
-    public abstract Object executeGeneric();
 }

@@ -7,12 +7,12 @@ import lox.nodes.BinaryExprNode;
 @GenerateNodeFactory
 public abstract class DivNode extends BinaryExprNode {
     @Specialization
-    public long executeLong(long left, long right) {
+    public long doLong(long left, long right) {
         return left / right;
     }
 
     @Specialization
-    public double executeDouble(double left, double right) {
+    public double doDouble(double left, double right) {
         return left / right;
     }
 }

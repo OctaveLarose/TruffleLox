@@ -1,5 +1,7 @@
 package lox.nodes;
 
+import com.oracle.truffle.api.frame.VirtualFrame;
+
 import java.util.List;
 
 public class SequenceNode extends ExpressionNode {
@@ -11,13 +13,13 @@ public class SequenceNode extends ExpressionNode {
     }
 
     @Override
-    public Object executeGeneric() {
+    public Object executeGeneric(VirtualFrame frame) {
         int expressionsNbr = expressions.size();
 
         for (int i = 0; i < expressionsNbr - 1; i++) {
-            expressions.get(i).executeGeneric();
+            expressions.get(i).executeGeneric(frame);
         }
 
-        return expressions.get(expressionsNbr - 1).executeGeneric();
+        return expressions.get(expressionsNbr - 1).executeGeneric(frame);
     }
 }
