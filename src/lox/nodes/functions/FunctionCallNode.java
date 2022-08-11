@@ -2,6 +2,7 @@ package lox.nodes.functions;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.nodes.ExpressionNode;
+import lox.objects.FunctionObject;
 
 import java.util.List;
 
@@ -9,7 +10,7 @@ public class FunctionCallNode extends ExpressionNode {
     private final ExpressionNode callTarget;
     private final List<ExpressionNode> arguments;
 
-    private FunctionDispatchNode dispatchNode;
+    private final FunctionDispatchNode dispatchNode = FunctionDispatchNodeGen.create();
 
     public FunctionCallNode(ExpressionNode callTarget, List<ExpressionNode> arguments) {
         this.callTarget = callTarget;
@@ -18,14 +19,15 @@ public class FunctionCallNode extends ExpressionNode {
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-        Object function = this.callTarget.executeGeneric(frame);
+        FunctionRootNode function = (FunctionRootNode) this.callTarget.executeGeneric(frame);
         Object[] evaluatedArgs = new Object[this.arguments.size()];
 
         int idx = 0;
         for (ExpressionNode expr: this.arguments) {
             evaluatedArgs[idx] = expr.executeGeneric(frame);
+            idx++;
         }
 
-        return this.dispatchNode.executeDispatch(function, evaluatedArgs);
+        return this.dispatchNode.executeDispatch(new FunctionObject(function.getCallTarget()), evaluatedArgs);
     }
 }

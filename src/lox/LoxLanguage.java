@@ -10,6 +10,8 @@ import lox.parser.Parser;
 @TruffleLanguage.Registration(id = "tlox", name = "TruffleLox")
 public class LoxLanguage extends TruffleLanguage<LoxContext> {
 
+    public static final String LANG_ID = "tlox";
+
     @CompilationFinal
     private static LoxLanguage current;
 
