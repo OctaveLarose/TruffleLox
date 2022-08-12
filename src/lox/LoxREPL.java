@@ -7,7 +7,7 @@ import org.graalvm.polyglot.Value;
 public class LoxREPL {
     private final static String PROMPT = "> ";
 
-    private final static Context context = Context.create();
+    private final static Context context = GodClass.getContext();
 
     public static void runLoop() {
         while (true) {

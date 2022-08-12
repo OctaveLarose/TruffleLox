@@ -2,12 +2,11 @@ package lox;
 
 import org.graalvm.polyglot.Context;
 
-public class EntryPoint {
+// Named after the antipattern! Now it just needs to not eventually become the antipattern!
+public class GodClass {
 
     static public void main(String[] args) {
-//        LoxREPL.runLoop();
-        System.out.println(getContext().eval(LoxLanguage.LANG_ID, "fun returnThreeToTwoArgs(a, b) { return 1 + 2 + 3; } returnThreeToTwoArgs(3, 4) + 1;"));
-//        System.out.println(getContext().eval(LoxLanguage.LANG_ID, "fun returnThreeToTwoArgs(a, b) { return a + b + 3; } returnThreeToTwoArgs(3, 4) + 1;"));
+        LoxREPL.runLoop();
     }
 
     static public Context getContext() {

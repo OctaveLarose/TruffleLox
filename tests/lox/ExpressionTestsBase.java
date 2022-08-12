@@ -10,4 +10,8 @@ public abstract class ExpressionTestsBase {
     protected boolean runBool(String sourceStr) {
         return context.eval("tlox", sourceStr).asBoolean();
     }
+
+    protected double runDouble(String sourceStr) {
+        return context.eval("tlox", sourceStr).asDouble();
+    }
 }

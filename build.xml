@@ -29,7 +29,7 @@
     <pathconvert property="add-opens-truffle" refid="add-opens-truffle" pathsep=" " />
 
     <target name="run" depends="compile">
-        <java classname="lox.EntryPoint" jvm="${graal_jvm.dir}/bin/java" fork="true">
+        <java classname="lox.GodClass" jvm="${graal_jvm.dir}/bin/java" fork="true">
             <classpath refid="lox-cp"/>
 
             <jvmarg line="-Dtruffle.class.path.append=${classes.dir}"/>

@@ -1,18 +1,19 @@
-package lox.nodes;
+package lox.nodes.variables;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import lox.LoxContext;
+import lox.nodes.ExpressionNode;
 import lox.objects.Variable;
 
-public abstract class VariableNode extends ExpressionNode {
+public abstract class GlobalVariableNode extends ExpressionNode {
     protected Variable var; // TODO sort out the redundancies with name and ExpressionNode children, bit weird
 
-    protected VariableNode(String name) {
+    protected GlobalVariableNode(String name) {
         this.var = new Variable(name, null);
     }
 
-    protected VariableNode(Variable var) {
+    protected GlobalVariableNode(Variable var) {
         this.var = var;
     }
 
@@ -20,7 +21,7 @@ public abstract class VariableNode extends ExpressionNode {
         return this.var;
     }
 
-    public abstract static class VariableReadNode extends VariableNode {
+    public abstract static class VariableReadNode extends GlobalVariableNode {
         public VariableReadNode(String name) {
             super(name);
             this.var = new Variable(name, null);
@@ -34,7 +35,7 @@ public abstract class VariableNode extends ExpressionNode {
     }
 
     @NodeChild(value = "assignmentExpr", type = ExpressionNode.class)
-    public abstract static class VariableWriteNode extends VariableNode {
+    public abstract static class VariableWriteNode extends GlobalVariableNode {
         public VariableWriteNode(String name) {
             super(name);
         }

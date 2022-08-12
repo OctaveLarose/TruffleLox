@@ -3,15 +3,15 @@ package lox.parser;
 import lox.nodes.*; // Bad habit but useful in this context of generated classes. TODO to be changed later though
 import lox.nodes.arithmetic.*;
 import lox.nodes.comparison.*;
-import lox.nodes.functions.FunctionCallNode;
-import lox.nodes.functions.FunctionDeclarationNode;
-import lox.nodes.functions.FunctionLookupNode;
+import lox.nodes.functions.*;
 import lox.nodes.literals.*;
-import lox.nodes.statements.ReturnStmt;
+import lox.nodes.statements.*;
+import lox.nodes.variables.*;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static lox.parser.Token.TokenType;
@@ -42,6 +42,8 @@ public class Parser {
     private List<Token> tokens;
 
     private int currentIdx = 0;
+
+    private HashMap<String, Integer> functionParameters;
 
     public Parser(String inputStr) {
         this.sourceStr = inputStr;
@@ -96,10 +98,17 @@ public class Parser {
 
         List<String> parameters = parameters();
 
+        this.functionParameters = new HashMap<>();
+        for (int i = 0; i < parameters.size(); i++)
+            this.functionParameters.put(parameters.get(i), i);
+
         if (!match(TokenType.CURLY_BRACKET_OPEN))
             throw new ParseError("Expected a '{' to specify a function declaration");
 
         ExpressionNode block = block();
+
+        this.functionParameters.clear();
+        this.functionParameters = null;
 
         return new FunctionDeclarationNode((String)idToken.literal, parameters, block);
     }
@@ -143,9 +152,9 @@ public class Parser {
         if (match(TokenType.EQUALS)) {
             ExpressionNode assignment = assignment();
 
-            if (assignee instanceof VariableNode) {
-                String varName = (((VariableNode)assignee).getLocalVariable().getName());
-                return VariableNodeFactory.VariableWriteNodeGen.create(varName, assignment);
+            if (assignee instanceof GlobalVariableNode) {
+                String varName = (((GlobalVariableNode)assignee).getLocalVariable().getName());
+                return GlobalVariableNodeFactory.VariableWriteNodeGen.create(varName, assignment);
             }
 
             throw new ParseError("Invalid assignment target");
@@ -281,7 +290,10 @@ public class Parser {
                     List<ExpressionNode> arguments = arguments();
                     return new FunctionCallNode(new FunctionLookupNode((String)currentToken.literal), arguments); // Shouldn't always have to look it up, but it's a start
                 }
-                return VariableNodeFactory.VariableReadNodeGen.create(((String) currentToken.literal)); }
+                if (this.functionParameters != null) { // i.e. whether we are currently parsing a function
+                    return new ArgumentReadNode(this.functionParameters.get((String) currentToken.literal));
+                }
+                return GlobalVariableNodeFactory.VariableReadNodeGen.create(((String) currentToken.literal)); }
             default -> throw new ParseError("Invalid expression: primary token of type " + currentToken.type);
         }
     }
