@@ -2,6 +2,7 @@ package lox.nodes.statements;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.nodes.ExpressionNode;
+import lox.nodes.ReturnException;
 
 public class ReturnStmt extends ExpressionNode {
     private final ExpressionNode value;
@@ -12,6 +13,6 @@ public class ReturnStmt extends ExpressionNode {
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-        return value; // TODO should leave the current scope somehow
+        throw new ReturnException(value.executeGeneric(frame)); // Cascading returns may fail?
     }
 }

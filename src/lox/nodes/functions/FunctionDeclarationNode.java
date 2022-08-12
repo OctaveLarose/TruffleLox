@@ -23,6 +23,6 @@ public class FunctionDeclarationNode extends ExpressionNode {
     public Object executeGeneric(VirtualFrame frame) {
         LoxContext loxContext = LoxContext.get(this);
         loxContext.globalScope.setFunction(this.name, this.parameters.size(), this.block);
-        return this.block.executeGeneric(frame);
+        return true;
     }
 }

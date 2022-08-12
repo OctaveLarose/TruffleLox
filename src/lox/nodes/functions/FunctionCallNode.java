@@ -2,6 +2,7 @@ package lox.nodes.functions;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.nodes.ExpressionNode;
+import lox.nodes.ReturnException;
 import lox.objects.FunctionObject;
 
 import java.util.List;
@@ -28,6 +29,10 @@ public class FunctionCallNode extends ExpressionNode {
             idx++;
         }
 
-        return this.dispatchNode.executeDispatch(new FunctionObject(function.getCallTarget()), evaluatedArgs);
+        try {
+            return this.dispatchNode.executeDispatch(new FunctionObject(function.getCallTarget()), evaluatedArgs);
+        } catch (ReturnException returnException) {
+            return returnException.getResult();
+        }
     }
 }
