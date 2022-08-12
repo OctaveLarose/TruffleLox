@@ -1,5 +1,8 @@
 package lox.parser;
 
+import lox.parser.error.LexerError;
+import lox.parser.error.ParseError;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +14,8 @@ public class Lexer {
     String sourceStr;
     int currentIdx;
     int symStartIdx;
+
+    int currentLine;
 
     private static final Map<String, TokenType> keywords = new HashMap<>()
     {{
@@ -67,7 +72,7 @@ public class Lexer {
 
     private void addToken(TokenType tokenType, Object literal) {
         String lexeme = this.sourceStr.substring(this.symStartIdx, this.currentIdx);
-        this.tokens.add(new Token(tokenType, lexeme, literal));
+        this.tokens.add(new Token(tokenType, lexeme, literal, currentLine, symStartIdx));
     }
 
     public List<Token> getTokens() throws ParseError {
@@ -118,14 +123,15 @@ public class Lexer {
                     }
                 }
                 case '\"' -> string();
-                case ' ', '\r', '\t', '\n' -> {}
+                case '\n' -> currentLine++;
+                case ' ', '\r', '\t' -> {}
                 default -> {
                     if (isAlpha(c)) {
                         identifier();
                     } else if (isDigit(c)) {
                         number();
                     } else {
-                        throw new ParseError("Unknown character: " + c);
+                        throw new LexerError("Unknown character: " + c);
                     }
                 }
             }
@@ -150,7 +156,7 @@ public class Lexer {
         while (peek() != '\"' && !isAtEnd()) advance();
 
         if (isAtEnd())
-            throw new ParseError("Unterminated string");
+            throw new LexerError("Unterminated string");
 
         // The closing quotation mark
         advance();

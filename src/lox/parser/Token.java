@@ -12,14 +12,19 @@ public class Token {
         FUN, RETURN, EOF
     }
 
-    final TokenType type;
-    final String lexeme;
-    final Object literal;
+    public final TokenType type;
+    public final String lexeme;
+    public final Object literal;
 
-    Token(TokenType type, String lexeme, Object literal) {
+    public final int lineIdx;
+    public final int startCharIdx;
+
+    Token(TokenType type, String lexeme, Object literal, int line, int startCharIdx) {
         this.type = type;
         this.lexeme = lexeme;
         this.literal = literal;
+        this.lineIdx = line;
+        this.startCharIdx = startCharIdx;
     }
 
     public String toString() {
