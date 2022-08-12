@@ -298,7 +298,10 @@ public class Parser {
                     return new FunctionCallNode(new FunctionLookupNode((String)currentToken.literal), arguments); // Shouldn't always have to look it up, but it's a start
                 }
                 if (this.functionParameters != null) { // i.e. whether we are currently parsing a function
-                    return new ArgumentReadNode(this.functionParameters.get((String) currentToken.literal));
+                    Integer argIdx = this.functionParameters.get((String) currentToken.literal);
+
+                    if (argIdx != null)
+                        return new ArgumentReadNode(argIdx);
                 }
                 return GlobalVariableNodeFactory.VariableReadNodeGen.create(((String) currentToken.literal)); }
             default -> throw new ParseError("Invalid expression: primary token of type " + currentToken.type);

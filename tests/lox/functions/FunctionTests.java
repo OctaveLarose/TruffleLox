@@ -8,10 +8,19 @@ import static org.junit.Assert.assertEquals;
 
 public class FunctionTests extends ExpressionTestsBase {
     @Test
-    public void functions() {
+    public void basic() {
         assertEquals(runDouble("fun addThree(a) { return a + 3; } addThree(-3);"), 0.0, 0.001);
         assertEquals(runDouble("fun add(a, b) { return a + b; } add(1000, 999);"), 1999.0, 0.001);
         assertEquals(runDouble("fun returnThreeToTwoArgs(a, b) { return a + b + 3; } returnThreeToTwoArgs(3, 4) + 1;"), 11.0, 0.001);
+    }
+
+    @Test
+    public void cascadingReturns() {
+        String cascadingReturns =   "fun nested(input) { return input + 2; } " +
+                                    "fun callNested(input) { a = input * 2; return nested(input) + a; } " +
+                                    "callNested(10);";
+
+        assertEquals(runDouble(cascadingReturns), 32.0, 0.001);
     }
 
     @Ignore("Not implemented, TODO")

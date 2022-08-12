@@ -13,6 +13,6 @@ public class ReturnStmt extends ExpressionNode {
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-        throw new ReturnException(value.executeGeneric(frame)); // Cascading returns may fail?
+        throw new ReturnException(value.executeGeneric(frame));
     }
 }
