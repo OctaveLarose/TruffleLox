@@ -18,7 +18,7 @@
         <javac srcdir="src" destdir="${classes.dir}" classpathref="lox-cp" debug="true" includeantruntime="false">
             <compilerarg line="-s ${src_gen.dir}" />
         </javac>
-        <javac srcdir="tests" destdir="${classes.dir}" classpathref="lox-cp" includeantruntime="false"/>
+        <javac srcdir="tests" destdir="${classes.dir}" classpathref="lox-cp" debug="true" includeantruntime="false"/>
     </target>
 
     <resources id="add-opens-truffle">

@@ -6,7 +6,15 @@ import org.graalvm.polyglot.Context;
 public class GodClass {
 
     static public void main(String[] args) {
+        runREPL();
+    }
+
+    static public void runREPL() {
         LoxREPL.runLoop();
+    }
+
+    static public void evalString(String inputStr) {
+        System.out.println(getContext().eval("tlox", inputStr));
     }
 
     static public Context getContext() {

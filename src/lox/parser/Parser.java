@@ -164,6 +164,11 @@ public class Parser {
                 return GlobalVariableNodeFactory.VariableWriteNodeGen.create(varName, assignment);
             }
 
+            if (assignee instanceof ArgumentNode) {
+                int argIdx = ((ArgumentNode)assignee).getIdx();
+                return ArgumentNodeFactory.ArgumentWriteNodeGen.create(argIdx, assignment);
+            }
+
             throw new ParseError("Invalid assignment target");
         }
         return assignee;
@@ -301,7 +306,7 @@ public class Parser {
                     Integer argIdx = this.functionParameters.get((String) currentToken.literal);
 
                     if (argIdx != null)
-                        return new ArgumentReadNode(argIdx);
+                        return ArgumentNodeFactory.ArgumentReadNodeGen.create(argIdx);
                 }
                 return GlobalVariableNodeFactory.VariableReadNodeGen.create(((String) currentToken.literal)); }
             default -> throw new ParseError("Invalid expression: primary token of type " + currentToken.type);

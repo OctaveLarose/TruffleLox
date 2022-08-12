@@ -23,6 +23,12 @@ public class FunctionTests extends ExpressionTestsBase {
         assertEquals(runDouble(cascadingReturns), 32.0, 0.001);
     }
 
+    @Test
+    public void editInputArgs() {
+        assertEquals(runDouble("fun func(a) { a = 1000; return a; } func(1);"), 1000.0, 0.001);
+        assertEquals(runDouble("fun func(a, b, c) { c = 1; c = b = 2; a = b = c; return a + b + c; } func(1, 1, 1);"), 6, 0.001);
+    }
+
     @Ignore("Not implemented, TODO")
     @Test
     public void noSharedState() {
