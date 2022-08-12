@@ -20,6 +20,13 @@ import static lox.parser.Token.TokenType;
     Grammar:
 
     program ->      statement* EOF
+    declaration ->  funStmt
+                    | statement
+
+    funStmt ->      "fun" "{" parameters? "}" block
+    block ->        "{" declaration* "}"
+    parameters ->   IDENTIFIER ("," IDENTIFIER)*
+
     statement ->    expr ";"
     expr ->         assignment
     assignment ->   IDENTIFIER "=" assignment

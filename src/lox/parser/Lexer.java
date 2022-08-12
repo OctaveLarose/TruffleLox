@@ -118,7 +118,7 @@ public class Lexer {
                     }
                 }
                 case '\"' -> string();
-                case ' ', '\r', '\t' -> {}
+                case ' ', '\r', '\t', '\n' -> {}
                 default -> {
                     if (isAlpha(c)) {
                         identifier();
