@@ -2,7 +2,7 @@ package lox;
 
 import com.oracle.truffle.api.dsl.ImplicitCast;
 import com.oracle.truffle.api.dsl.TypeSystem;
-import lox.nodes.literals.NilLiteralNode;
+import lox.objects.Nil;
 
 @TypeSystem
 public class LoxTypeSystem {
@@ -12,7 +12,7 @@ public class LoxTypeSystem {
     }
 
     @ImplicitCast
-    public static boolean isNil(@SuppressWarnings("unused") NilLiteralNode value) {
+    public static boolean isNil(@SuppressWarnings("unused") Nil value) {
         return false; // The only falsey value. TODO Which means every language element needs to be truthy
     }
 }

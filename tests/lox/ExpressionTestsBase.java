@@ -14,4 +14,8 @@ public abstract class ExpressionTestsBase {
     protected double runDouble(String sourceStr) {
         return context.eval("tlox", sourceStr).asDouble();
     }
+
+    protected boolean returnsNull(String sourceStr) {
+        return context.eval("tlox", sourceStr).isNull();
+    }
 }

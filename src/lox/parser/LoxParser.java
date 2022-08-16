@@ -3,6 +3,8 @@ package lox.parser;
 import lox.nodes.*; // Bad habit but useful in this context of generated classes. TODO to be changed later though
 import lox.nodes.arithmetic.*;
 import lox.nodes.comparison.*;
+import lox.nodes.conditionals.IfElseNode;
+import lox.nodes.conditionals.IfNode;
 import lox.nodes.functions.*;
 import lox.nodes.literals.*;
 import lox.nodes.statements.*;
@@ -28,7 +30,14 @@ import static lox.parser.Token.TokenType;
     block ->        "{" declaration* "}"
     parameters ->   IDENTIFIER ("," IDENTIFIER)*
 
-    statement ->    expr ";"
+    statement ->    exprStmt
+                    | ifStmt
+                    | returnStmt
+                    | block
+    ifStmt ->       "if" "(" expression ")" statement ( "else" statement )? ;
+    exprStmt ->     expr ";"
+    returnStmt     → "return" expression? ";" ;
+
     expr ->         assignment
     assignment ->   IDENTIFIER "=" assignment
                     | orExpr
@@ -49,6 +58,7 @@ public class LoxParser extends Parser {
 
     private HashMap<String, Integer> functionParameters;
 
+    @SuppressWarnings("unused") // Used for debugging
     public LoxParser(String inputStr) {
         this.sourceStr = inputStr;
     }
@@ -120,10 +130,30 @@ public class LoxParser extends Parser {
     private ExpressionNode statement() throws ParseError {
         if (match(TokenType.CURLY_BRACKET_OPEN))
             return block();
+        else if (match(TokenType.IF))
+            return ifStmt();
         else if (match(TokenType.RETURN))
             return returnStmt();
         else
             return exprStatement();
+    }
+
+    private ExpressionNode ifStmt() throws ParseError {
+        if (!match(TokenType.PAREN_OPEN))
+            error("Expected a '(' after keyword \"if\"");
+        ExpressionNode conditionalExpression = expression();
+
+        if (!match(TokenType.PAREN_CLOSE))
+            error("Expected a ')' after \"if\" conditional expression");
+
+        ExpressionNode consequent = statement();
+
+        if (match(TokenType.ELSE)) {
+            ExpressionNode alternative = statement();
+            return new IfElseNode(conditionalExpression, consequent, alternative);
+        }
+
+        return new IfNode(conditionalExpression, consequent);
     }
 
     private ExpressionNode block() throws ParseError {
@@ -284,7 +314,7 @@ public class LoxParser extends Parser {
         switch (currentToken.type) {
             case TRUE -> { return new TrueLiteralNode(); }
             case FALSE -> { return new FalseLiteralNode(); }
-            case NIL -> { return NilLiteralNode.NIL_VALUE; }
+            case NIL -> { return new NilLiteralNode(); }
             case NUMBER -> { return new NumberLiteralNode((Double) currentToken.literal); }
             case STRING -> { return new StringLiteralNode((String) currentToken.literal); }
             case PAREN_OPEN -> {

@@ -13,9 +13,12 @@ public class BlockNode extends ExpressionNode {
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-        for (ExpressionNode expr: this.expressions) {
-            expr.executeGeneric(frame);
+        int blockLen = this.expressions.size();
+
+        for (int i = 0; i < blockLen - 1; i++) {
+            this.expressions.get(i).executeGeneric(frame);
         }
-        return null;
+
+        return this.expressions.get(blockLen - 1).executeGeneric(frame);
     }
 }

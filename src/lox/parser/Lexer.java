@@ -25,7 +25,9 @@ public class Lexer {
         put("false",  TokenType.FALSE);
         put("nil",    TokenType.NIL);
         put("fun",    TokenType.FUN);
-        put("return",    TokenType.RETURN);
+        put("if",     TokenType.IF);
+        put("else",   TokenType.ELSE);
+        put("return", TokenType.RETURN);
     }};
 
     List<Token> tokens;
