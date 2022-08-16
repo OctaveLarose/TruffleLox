@@ -7,6 +7,8 @@ import lox.nodes.conditionals.IfElseNode;
 import lox.nodes.conditionals.IfNode;
 import lox.nodes.functions.*;
 import lox.nodes.literals.*;
+import lox.nodes.loop.ForNode;
+import lox.nodes.loop.WhileNode;
 import lox.nodes.statements.*;
 import lox.nodes.variables.*;
 import lox.parser.error.ParseError;
@@ -34,10 +36,12 @@ import static lox.parser.Token.TokenType;
                     | ifStmt
                     | printStmt
                     | returnStmt
+                    | whileStmt
                     | block
     ifStmt ->       "if" "(" expression ")" statement ( "else" statement )? ;
     exprStmt ->     expr ";"
-    returnStmt     → "return" expression? ";" ;
+    returnStmt ->   "return" expression? ";" ;
+    whileStmt ->    "while" "(" expression ")" statement ;
 
     expr ->         assignment
     assignment ->   IDENTIFIER "=" assignment
@@ -129,16 +133,54 @@ public class LoxParser extends Parser {
     }
 
     private ExpressionNode statement() throws ParseError {
-        if (match(TokenType.CURLY_BRACKET_OPEN))
-            return block();
+        if (match(TokenType.FOR))
+            return forStmt();
         else if (match(TokenType.IF))
             return ifStmt();
         else if (match(TokenType.PRINT))
             return printStmt();
         else if (match(TokenType.RETURN))
             return returnStmt();
+        else if (match(TokenType.WHILE))
+            return whileStmt();
+        else if (match(TokenType.CURLY_BRACKET_OPEN))
+            return block();
         else
             return exprStatement();
+    }
+
+    private ExpressionNode forStmt() throws ParseError {
+        // forStmt        → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement ;
+
+        if (!match(TokenType.PAREN_OPEN))
+            error("Expect parentheses after a for keyword");
+
+        ExpressionNode initialization = null;
+        if (match(TokenType.SEMICOLON))
+            ; // TODO handle a var declaration
+//        else if (match(TokenType.VAR))
+//            initialization = varDecl();
+        else
+            error("for statement expects an initializer or a ';'");
+
+
+        ExpressionNode termination = null;
+        if (peek().type != TokenType.SEMICOLON)
+            termination = expression();
+
+        if (!match(TokenType.SEMICOLON))
+            error("Expect at least one semicolon in for declaration");
+
+        ExpressionNode increment = null;
+        if (peek().type != TokenType.PAREN_CLOSE) {
+            increment = expression();
+        }
+
+        if (!match(TokenType.PAREN_CLOSE))
+            error("Unclosed parentheses after for declaration");
+
+        ExpressionNode body = statement();
+        return new ForNode(initialization, termination, increment, body);
     }
 
     private ExpressionNode ifStmt() throws ParseError {
@@ -157,6 +199,21 @@ public class LoxParser extends Parser {
         }
 
         return new IfNode(conditionalExpression, consequent);
+    }
+
+    private ExpressionNode whileStmt() throws ParseError {
+        // "while" "(" expression ")" statement ;
+        if (!match(TokenType.PAREN_OPEN))
+            error("No open parenthesis after while");
+
+        ExpressionNode cond = expression();
+
+        if (!match(TokenType.PAREN_CLOSE))
+            error("No closed parenthesis after while condition");
+
+        ExpressionNode statement = statement();
+
+        return new WhileNode(cond, statement);
     }
 
     private ExpressionNode printStmt() throws ParseError {

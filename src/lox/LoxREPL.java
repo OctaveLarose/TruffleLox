@@ -10,7 +10,7 @@ public class LoxREPL {
 
     public static void runLoop() {
         while (true) {
-            GlobalIO.print(PROMPT); // TODO: we can set up Truffle to specify IO for us, I believe. May or may not be relevant here
+            GlobalIO.print(PROMPT);
 
             String input = GlobalIO.getInput();
             if (input == null) {
@@ -18,8 +18,9 @@ public class LoxREPL {
             }
 
             // We terminate statements if they're unterminated for the sake of convenience
-            if (input.charAt(input.length() - 1) != ';')
-                input = input.concat(";");
+            // TODO which fucks up if it's, say a for statement
+//            if (input.charAt(input.length() - 1) != ';')
+//                input = input.concat(";");
 
             try {
                 context.eval("tlox", input);

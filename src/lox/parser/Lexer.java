@@ -27,8 +27,10 @@ public class Lexer {
         put("fun",    TokenType.FUN);
         put("if",     TokenType.IF);
         put("else",   TokenType.ELSE);
+        put("while",  TokenType.WHILE);
+        put("for",    TokenType.FOR);
         put("return", TokenType.RETURN);
-        put("print", TokenType.PRINT);
+        put("print",  TokenType.PRINT);
     }};
 
     List<Token> tokens;
