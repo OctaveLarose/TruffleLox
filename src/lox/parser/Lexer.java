@@ -28,6 +28,7 @@ public class Lexer {
         put("if",     TokenType.IF);
         put("else",   TokenType.ELSE);
         put("return", TokenType.RETURN);
+        put("print", TokenType.PRINT);
     }};
 
     List<Token> tokens;

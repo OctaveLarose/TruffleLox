@@ -5,9 +5,9 @@ import java.io.PrintStream;
 import java.util.Scanner;
 
 public class GlobalIO {
-    private static final InputStream INPUT_STREAM = System.in;
-    private static final PrintStream OUTPUT_STREAM = System.out;
-    private static final PrintStream ERROR_STREAM = System.err;
+    public static final InputStream INPUT_STREAM = System.in;
+    public static final PrintStream OUTPUT_STREAM = System.out;
+    public static final PrintStream ERROR_STREAM = System.err;
 
     private static final Scanner in = new Scanner(INPUT_STREAM);
 

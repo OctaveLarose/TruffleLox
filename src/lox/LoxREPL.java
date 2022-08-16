@@ -2,7 +2,6 @@ package lox;
 
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.PolyglotException;
-import org.graalvm.polyglot.Value;
 
 public class LoxREPL {
     private final static String PROMPT = "> ";
@@ -23,8 +22,8 @@ public class LoxREPL {
                 input = input.concat(";");
 
             try {
-                Value value = context.eval("tlox", input);
-                GlobalIO.printLn(value);
+                context.eval("tlox", input);
+//                GlobalIO.printLn(value); // More convenient since it avoids a call to print
             } catch (PolyglotException e) {
                 System.err.println(e.getMessage());
             }

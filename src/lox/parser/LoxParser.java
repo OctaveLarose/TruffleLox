@@ -32,6 +32,7 @@ import static lox.parser.Token.TokenType;
 
     statement ->    exprStmt
                     | ifStmt
+                    | printStmt
                     | returnStmt
                     | block
     ifStmt ->       "if" "(" expression ")" statement ( "else" statement )? ;
@@ -132,6 +133,8 @@ public class LoxParser extends Parser {
             return block();
         else if (match(TokenType.IF))
             return ifStmt();
+        else if (match(TokenType.PRINT))
+            return printStmt();
         else if (match(TokenType.RETURN))
             return returnStmt();
         else
@@ -154,6 +157,11 @@ public class LoxParser extends Parser {
         }
 
         return new IfNode(conditionalExpression, consequent);
+    }
+
+    private ExpressionNode printStmt() throws ParseError {
+        ExpressionNode expr = exprStatement();
+        return PrintStatementFactory.create(expr);
     }
 
     private ExpressionNode block() throws ParseError {

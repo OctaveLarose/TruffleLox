@@ -13,14 +13,16 @@ public class GodClass {
         LoxREPL.runLoop();
     }
 
+    @SuppressWarnings("unused") // Used for debugging
     static public void evalString(String inputStr) {
-        System.out.println(getContext().eval("tlox", inputStr));
+        var val = getContext().eval("tlox", inputStr);
+        System.out.println(val);
     }
 
     static public Context getContext() {
         Context.Builder contextBuilder = Context.newBuilder(LoxLanguage.LANG_ID)
-                .in(System.in)
-                .out(System.out)
+                .in(GlobalIO.INPUT_STREAM)
+                .out(GlobalIO.OUTPUT_STREAM)
                 .allowAllAccess(true);
         return contextBuilder.build();
     }

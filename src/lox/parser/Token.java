@@ -10,7 +10,7 @@ public class Token {
         TRUE, FALSE, NIL,
         IF, ELSE,
         SEMICOLON, COMMA, BANG, AND, OR,
-        FUN, RETURN, EOF
+        FUN, PRINT, RETURN, EOF
     }
 
     public final TokenType type;
