@@ -15,6 +15,9 @@ public class BlockNode extends ExpressionNode {
     public Object executeGeneric(VirtualFrame frame) {
         int blockLen = this.expressions.size();
 
+        if (blockLen == 0)
+            return null;
+
         for (int i = 0; i < blockLen - 1; i++) {
             this.expressions.get(i).executeGeneric(frame);
         }

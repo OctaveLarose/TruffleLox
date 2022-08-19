@@ -179,12 +179,12 @@ public class LoxParser extends Parser {
             error("Expect parentheses after a for keyword");
 
         ExpressionNode initialization = null;
-        if (match(TokenType.SEMICOLON))
-            ; // TODO handle a var declaration
-//        else if (match(TokenType.VAR))
-//            initialization = varDecl();
-        else
-            error("for statement expects an initializer or a ';'");
+        if (!match(TokenType.SEMICOLON)) {
+            if (match(TokenType.VAR))
+                initialization = varDecl();
+            else
+                error("for statement expects an initializer or a ';'");
+        }
 
 
         ExpressionNode termination = null;
