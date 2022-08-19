@@ -136,17 +136,18 @@ public class LoxParser extends Parser {
     }
 
     private ExpressionNode varDecl() throws ParseError {
-        ExpressionNode assignedExpr = null;
         Token identifierToken = peek();
 
         if (!match(TokenType.IDENTIFIER))
             error("No identifier in variable declaration");
 
-        if (!match(TokenType.SEMICOLON)) {
-            if (!match(TokenType.EQUALS))
-                error("Expect an equals or semicolon after an identifier in a variable declaration");
-            assignedExpr = expression();
-        }
+        if (match(TokenType.SEMICOLON))
+            return new GlobalVariableDecl((String) identifierToken.literal, null);
+
+        if (!match(TokenType.EQUALS))
+            error("Expect an equals or semicolon after an identifier in a variable declaration");
+
+        ExpressionNode assignedExpr = expression();
 
         if (!match(TokenType.SEMICOLON))
             error("Unterminated variable declaration");
