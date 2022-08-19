@@ -6,11 +6,11 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
 
-@Ignore("Not ready yet")
+@Ignore("InvalidExpressionsTests not ready yet")
 public class InvalidExpressionsTests extends ExpressionTestsBase {
     @Test
     public void invalidSyntax() {
-        assertTrue(runBool("1 == 1;"));; //TODO
+        assertTrue(runBool("1 == 1;")); //TODO
     }
 
     @Test

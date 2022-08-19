@@ -17,7 +17,7 @@ public class FunctionTests extends ExpressionTestsBase {
     @Test
     public void cascadingReturns() {
         String cascadingReturns =   "fun nested(input) { return input + 2; } " +
-                                    "fun callNested(input) { a = input * 2; return nested(input) + a; } " +
+                                    "fun callNested(input) { var a = input * 2; return nested(input) + a; } " +
                                     "callNested(10);";
 
         assertEquals(runDouble(cascadingReturns), 32.0, 0.001);
@@ -29,9 +29,16 @@ public class FunctionTests extends ExpressionTestsBase {
         assertEquals(runDouble("fun func(a, b, c) { c = 1; c = b = 2; a = b = c; return a + b + c; } func(1, 1, 1);"), 6, 0.001);
     }
 
-    @Ignore("Not implemented, TODO")
+    @Ignore("noSharedState() not implemented, TODO")
     @Test
     public void noSharedState() {
-        assertEquals(runDouble("fun addA(input) { a = 24; return a + input; } a = 42; add(a);"), 66.0, 0.001);
+        assertEquals(runDouble("fun addA(input) { var a = 24; return a + input; } var a = 42; add(a);"), 66.0, 0.001);
+    }
+
+    @Ignore("noShadowing() not implemented, TODO")
+    @Test
+    public void noShadowing() {
+        // should throw!
+        assertEquals(runDouble("fun addA(input) { var input = 34; return input; } var a = 42; add(a);"), 66.0, 0.001);
     }
 }

@@ -31,6 +31,7 @@ public class Lexer {
         put("for",    TokenType.FOR);
         put("return", TokenType.RETURN);
         put("print",  TokenType.PRINT);
+        put("var",    TokenType.VAR);
     }};
 
     List<Token> tokens;

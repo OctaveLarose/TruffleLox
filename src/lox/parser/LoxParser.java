@@ -25,10 +25,11 @@ import static lox.parser.Token.TokenType;
     Grammar:
 
     program ->      statement* EOF
-    declaration ->  funStmt
+    declaration ->  funDecl
+                    | varDecl
                     | statement
 
-    funStmt ->      "fun" "{" parameters? "}" block
+    funDecl ->      "fun" "{" parameters? "}" block
     block ->        "{" declaration* "}"
     parameters ->   IDENTIFIER ("," IDENTIFIER)*
 
@@ -101,12 +102,14 @@ public class LoxParser extends Parser {
 
     private ExpressionNode declaration() throws ParseError {
         if (match(TokenType.FUN)) {
-            return function();
+            return funDecl();
+        } else if (match(TokenType.VAR)) {
+            return varDecl();
         }
         return statement();
     }
 
-    private ExpressionNode function() throws ParseError {
+    private ExpressionNode funDecl() throws ParseError {
         Token idToken = this.peek();
 
         if (!match(TokenType.IDENTIFIER))
@@ -130,6 +133,25 @@ public class LoxParser extends Parser {
         this.functionParameters = null;
 
         return new FunctionDeclarationNode((String)idToken.literal, parameters, block);
+    }
+
+    private ExpressionNode varDecl() throws ParseError {
+        ExpressionNode assignedExpr = null;
+        Token identifierToken = peek();
+
+        if (!match(TokenType.IDENTIFIER))
+            error("No identifier in variable declaration");
+
+        if (!match(TokenType.SEMICOLON)) {
+            if (!match(TokenType.EQUALS))
+                error("Expect an equals or semicolon after an identifier in a variable declaration");
+            assignedExpr = expression();
+        }
+
+        if (!match(TokenType.SEMICOLON))
+            error("Unterminated variable declaration");
+
+        return new GlobalVariableDecl((String) identifierToken.literal, assignedExpr);
     }
 
     private ExpressionNode statement() throws ParseError {

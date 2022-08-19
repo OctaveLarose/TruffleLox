@@ -13,10 +13,6 @@ public abstract class GlobalVariableNode extends ExpressionNode {
         this.var = new Variable(name, null);
     }
 
-    protected GlobalVariableNode(Variable var) {
-        this.var = var;
-    }
-
     public Variable getLocalVariable() {
         return this.var;
     }
@@ -43,6 +39,8 @@ public abstract class GlobalVariableNode extends ExpressionNode {
         @Specialization
         public Object write(Object value) {
             LoxContext context = LoxContext.get(this);
+            if (context.globalScope.getVar(this.var.getName()) == null)
+                throw new RuntimeException("Attempted to write to undeclared variable " + this.var.getName());
             context.globalScope.setVar(this.var.getName(), value);
             return value;
         }
