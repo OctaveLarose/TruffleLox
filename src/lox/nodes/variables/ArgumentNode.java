@@ -8,14 +8,14 @@ import lox.nodes.ExpressionNode;
 // TODO specialize this node
 public abstract class ArgumentNode extends ExpressionNode {
 
-    protected int argIdx;
+    protected int slotId;
 
     public ArgumentNode(int argIdx) {
-        this.argIdx = argIdx;
+        this.slotId = argIdx;
     }
 
-    public int getIdx() {
-        return this.argIdx;
+    public int getSlotId() {
+        return this.slotId;
     }
 
     public static abstract class ArgumentReadNode extends ArgumentNode {
@@ -32,7 +32,7 @@ public abstract class ArgumentNode extends ExpressionNode {
         @Specialization
         public Object readGeneric(VirtualFrame frame) {
             var arguments = frame.getArguments();
-            return arguments[this.argIdx];
+            return arguments[this.slotId];
         }
     }
 
@@ -44,7 +44,7 @@ public abstract class ArgumentNode extends ExpressionNode {
 
         @Specialization
         public Object writeGeneric(VirtualFrame frame, Object value) {
-            frame.getArguments()[this.argIdx] = value;
+            frame.getArguments()[this.slotId] = value;
             return value;
         }
     }

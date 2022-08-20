@@ -3,7 +3,6 @@ package lox;
 import com.oracle.truffle.api.CallTarget;
 import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.TruffleLanguage;
-import lox.nodes.ExpressionNode;
 import lox.nodes.LoxRootNode;
 import lox.parser.error.ParseError;
 import lox.parser.error.ParseErrorPrinter;
@@ -18,7 +17,7 @@ public class LoxLanguage extends TruffleLanguage<LoxContext> {
     private static LoxLanguage current;
 
     public static LoxLanguage getCurrent() {
-        return current;
+        return current; // TODO see if this can get removed for now
     }
 
     @Override
@@ -29,8 +28,7 @@ public class LoxLanguage extends TruffleLanguage<LoxContext> {
     @Override
     protected CallTarget parse(ParsingRequest request) throws Exception {
         try {
-            ExpressionNode exprNode = new LoxParser(request.getSource().getReader()).parse();
-            LoxRootNode rootNode = new LoxRootNode(exprNode);
+            LoxRootNode rootNode = new LoxParser(request.getSource().getReader()).parse();
             return rootNode.getCallTarget();
         } catch (ParseError e) {
             ParseErrorPrinter.print(e, request.getSource());

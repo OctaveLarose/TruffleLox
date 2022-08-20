@@ -1,5 +1,7 @@
 package lox.parser;
 
+import com.oracle.truffle.api.frame.FrameDescriptor;
+import com.oracle.truffle.api.frame.FrameSlotKind;
 import lox.nodes.*; // Bad habit but useful in this context of generated classes. TODO to be changed later though
 import lox.nodes.arithmetic.*;
 import lox.nodes.comparison.*;
@@ -62,7 +64,13 @@ import static lox.parser.Token.TokenType;
 public class LoxParser extends Parser {
     private final String sourceStr;
 
-    private HashMap<String, Integer> functionParameters;
+    private HashMap<String, Integer> functionParamsIdMap;
+
+    private HashMap<String, Integer> localsIdMap;
+
+    static int localVarIdx = 0;
+
+    private final FrameDescriptor.Builder frameDescriptorBuilder = FrameDescriptor.newBuilder();
 
     @SuppressWarnings("unused") // Used for debugging
     public LoxParser(String inputStr) {
@@ -85,10 +93,16 @@ public class LoxParser extends Parser {
         this.sourceStr = readerStr;
     }
 
-    public ExpressionNode parse() throws ParseError {
+    public LoxRootNode parse() throws ParseError {
         Lexer lexer = new Lexer(this.sourceStr);
         this.tokens = lexer.getTokens();
-        return program();
+        this.localsIdMap = new HashMap<>();
+
+        ExpressionNode program = program();
+
+        frameDescriptorBuilder.addSlots(localsIdMap.size(), FrameSlotKind.Object); // Should be for a single scope, not just the entire program!
+
+        return new LoxRootNode(program, frameDescriptorBuilder.build());
     }
 
     private ExpressionNode program() throws ParseError {
@@ -120,17 +134,19 @@ public class LoxParser extends Parser {
 
         List<String> parameters = parameters();
 
-        this.functionParameters = new HashMap<>();
+        this.functionParamsIdMap = new HashMap<>();
         for (int i = 0; i < parameters.size(); i++)
-            this.functionParameters.put(parameters.get(i), i);
+            this.functionParamsIdMap.put(parameters.get(i), i);
 
         if (!match(TokenType.CURLY_BRACKET_OPEN))
             error("Expected a '{' to specify a function declaration");
 
+        localVarIdx = 0;
         ExpressionNode block = block();
+        localVarIdx = 0;
 
-        this.functionParameters.clear();
-        this.functionParameters = null;
+        this.functionParamsIdMap.clear();
+        this.functionParamsIdMap = null;
 
         return new FunctionDeclarationNode((String)idToken.literal, parameters, block);
     }
@@ -141,8 +157,10 @@ public class LoxParser extends Parser {
         if (!match(TokenType.IDENTIFIER))
             error("No identifier in variable declaration");
 
-        if (match(TokenType.SEMICOLON))
-            return new GlobalVariableDecl((String) identifierToken.literal, null);
+        if (match(TokenType.SEMICOLON)) {
+            localsIdMap.put((String) identifierToken.literal, localVarIdx);
+            return new LocalVariableDecl((String) identifierToken.literal, localVarIdx++, null);
+        }
 
         if (!match(TokenType.EQUALS))
             error("Expect an equals or semicolon after an identifier in a variable declaration");
@@ -152,7 +170,8 @@ public class LoxParser extends Parser {
         if (!match(TokenType.SEMICOLON))
             error("Unterminated variable declaration");
 
-        return new GlobalVariableDecl((String) identifierToken.literal, assignedExpr);
+        localsIdMap.put((String) identifierToken.literal, localVarIdx);
+        return new LocalVariableDecl((String) identifierToken.literal, localVarIdx++, assignedExpr);
     }
 
     private ExpressionNode statement() throws ParseError {
@@ -274,13 +293,14 @@ public class LoxParser extends Parser {
         if (match(TokenType.EQUALS)) {
             ExpressionNode assignment = assignment();
 
-            if (assignee instanceof GlobalVariableNode) {
-                String varName = (((GlobalVariableNode)assignee).getLocalVariable().getName());
-                return GlobalVariableNodeFactory.VariableWriteNodeGen.create(varName, assignment);
+            if (assignee instanceof LocalVariableNode) {
+                String varName = (((LocalVariableNode)assignee).getName());
+                int slotId = ((LocalVariableNode)assignee).getSlotId();
+                return LocalVariableNodeFactory.VariableWriteNodeGen.create(varName, slotId, assignment);
             }
 
             if (assignee instanceof ArgumentNode) {
-                int argIdx = ((ArgumentNode)assignee).getIdx();
+                int argIdx = ((ArgumentNode)assignee).getSlotId();
                 return ArgumentNodeFactory.ArgumentWriteNodeGen.create(argIdx, assignment);
             }
 
@@ -416,13 +436,13 @@ public class LoxParser extends Parser {
                     List<ExpressionNode> arguments = arguments();
                     return new FunctionCallNode(new FunctionLookupNode((String)currentToken.literal), arguments); // Shouldn't always have to look it up, but it's a start
                 }
-                if (this.functionParameters != null) { // i.e. whether we are currently parsing a function
-                    Integer argIdx = this.functionParameters.get((String) currentToken.literal);
+                if (this.functionParamsIdMap != null) { // i.e. whether we are currently parsing a function
+                    Integer argIdx = this.functionParamsIdMap.get((String) currentToken.literal);
 
                     if (argIdx != null)
                         return ArgumentNodeFactory.ArgumentReadNodeGen.create(argIdx);
                 }
-                return GlobalVariableNodeFactory.VariableReadNodeGen.create(((String) currentToken.literal)); }
+                return LocalVariableNodeFactory.VariableReadNodeGen.create((String) currentToken.literal, this.localsIdMap.get((String) currentToken.literal)); }
             default -> error("Invalid expression: primary token of type " + currentToken.type);
         }
 

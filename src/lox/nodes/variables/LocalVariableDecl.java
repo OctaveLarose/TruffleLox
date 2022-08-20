@@ -1,17 +1,18 @@
 package lox.nodes.variables;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
-import lox.LoxContext;
 import lox.nodes.ExpressionNode;
 import lox.objects.Nil;
 
-// Like its brethren, should not be GlobalVar... and just VariableDecl
-public class GlobalVariableDecl extends ExpressionNode {
+public class LocalVariableDecl extends ExpressionNode {
     private final String varName;
+
+    private final int slotId;
     private final ExpressionNode assignedExpr;
 
-    public GlobalVariableDecl(String varName, ExpressionNode assignedExpr) {
+    public LocalVariableDecl(String varName, int slotId, ExpressionNode assignedExpr) {
         this.varName = varName;
+        this.slotId = slotId;
         this.assignedExpr = assignedExpr;
     }
 
@@ -21,9 +22,8 @@ public class GlobalVariableDecl extends ExpressionNode {
         if (this.assignedExpr != null)
             initValue = this.assignedExpr.executeGeneric(frame);
 
-        LoxContext context = LoxContext.get(this);
         // TODO: can currently shadow fields, which should be an error!
-        context.globalScope.setVar(this.varName, initValue);
+        frame.setObject(slotId, initValue);
 
         return initValue;
     }
