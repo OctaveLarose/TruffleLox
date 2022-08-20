@@ -1,16 +1,12 @@
 package lox.parser;
 
-import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.FrameSlotKind;
 import lox.nodes.*; // Bad habit but useful in this context of generated classes. TODO to be changed later though
 import lox.nodes.arithmetic.*;
 import lox.nodes.comparison.*;
-import lox.nodes.conditionals.IfElseNode;
-import lox.nodes.conditionals.IfNode;
+import lox.nodes.conditionals.*;
 import lox.nodes.functions.*;
 import lox.nodes.literals.*;
-import lox.nodes.loop.ForNode;
-import lox.nodes.loop.WhileNode;
+import lox.nodes.loop.*;
 import lox.nodes.statements.*;
 import lox.nodes.variables.*;
 import lox.parser.error.ParseError;
@@ -18,7 +14,6 @@ import lox.parser.error.ParseError;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static lox.parser.Token.TokenType;
@@ -62,15 +57,10 @@ import static lox.parser.Token.TokenType;
                     | "(" expr ")"
  */
 public class LoxParser extends Parser {
+    private final String ROOT_FUNCTION_NAME = "_main";
     private final String sourceStr;
 
-    private HashMap<String, Integer> functionParamsIdMap;
-
-    private HashMap<String, Integer> localsIdMap;
-
-    static int localVarIdx = 0;
-
-    private final FrameDescriptor.Builder frameDescriptorBuilder = FrameDescriptor.newBuilder();
+    private FunctionContext currentScope;
 
     @SuppressWarnings("unused") // Used for debugging
     public LoxParser(String inputStr) {
@@ -96,13 +86,12 @@ public class LoxParser extends Parser {
     public LoxRootNode parse() throws ParseError {
         Lexer lexer = new Lexer(this.sourceStr);
         this.tokens = lexer.getTokens();
-        this.localsIdMap = new HashMap<>();
+
+        this.currentScope = new FunctionContext(ROOT_FUNCTION_NAME);
 
         ExpressionNode program = program();
 
-        frameDescriptorBuilder.addSlots(localsIdMap.size(), FrameSlotKind.Object); // Should be for a single scope, not just the entire program!
-
-        return new LoxRootNode(program, frameDescriptorBuilder.build());
+        return new LoxRootNode(program, this.currentScope.getFrameDescriptor());
     }
 
     private ExpressionNode program() throws ParseError {
@@ -134,19 +123,19 @@ public class LoxParser extends Parser {
 
         List<String> parameters = parameters();
 
-        this.functionParamsIdMap = new HashMap<>();
-        for (int i = 0; i < parameters.size(); i++)
-            this.functionParamsIdMap.put(parameters.get(i), i);
-
         if (!match(TokenType.CURLY_BRACKET_OPEN))
             error("Expected a '{' to specify a function declaration");
 
-        localVarIdx = 0;
-        ExpressionNode block = block();
-        localVarIdx = 0;
+        FunctionContext functionContext = new FunctionContext((String)idToken.literal);
+        functionContext.setParameters(parameters);
 
-        this.functionParamsIdMap.clear();
-        this.functionParamsIdMap = null;
+        FunctionContext callingContext = this.currentScope;
+
+        this.currentScope = functionContext;
+
+        ExpressionNode block = block();
+
+        this.currentScope = callingContext;
 
         return new FunctionDeclarationNode((String)idToken.literal, parameters, block);
     }
@@ -157,9 +146,11 @@ public class LoxParser extends Parser {
         if (!match(TokenType.IDENTIFIER))
             error("No identifier in variable declaration");
 
+        String varName = (String) identifierToken.literal;
+
         if (match(TokenType.SEMICOLON)) {
-            localsIdMap.put((String) identifierToken.literal, localVarIdx);
-            return new LocalVariableDecl((String) identifierToken.literal, localVarIdx++, null);
+            this.currentScope.setLocal(varName);
+            return new LocalVariableDecl(varName, this.currentScope.getLocal(varName), null);
         }
 
         if (!match(TokenType.EQUALS))
@@ -170,8 +161,8 @@ public class LoxParser extends Parser {
         if (!match(TokenType.SEMICOLON))
             error("Unterminated variable declaration");
 
-        localsIdMap.put((String) identifierToken.literal, localVarIdx);
-        return new LocalVariableDecl((String) identifierToken.literal, localVarIdx++, assignedExpr);
+        this.currentScope.setLocal(varName);
+        return new LocalVariableDecl(varName, this.currentScope.getLocal(varName), assignedExpr);
     }
 
     private ExpressionNode statement() throws ParseError {
@@ -432,17 +423,19 @@ public class LoxParser extends Parser {
                 return expr;
             }
             case IDENTIFIER -> {
+                String identifierName = (String)currentToken.literal;
+
                 if (match(TokenType.PAREN_OPEN)) { // TODO: should instead be handled in a call() function above
                     List<ExpressionNode> arguments = arguments();
-                    return new FunctionCallNode(new FunctionLookupNode((String)currentToken.literal), arguments); // Shouldn't always have to look it up, but it's a start
+                    return new FunctionCallNode(new FunctionLookupNode(identifierName), arguments); // Shouldn't always have to look it up, but it's a start
                 }
-                if (this.functionParamsIdMap != null) { // i.e. whether we are currently parsing a function
-                    Integer argIdx = this.functionParamsIdMap.get((String) currentToken.literal);
+                if (!this.currentScope.getName().equals(ROOT_FUNCTION_NAME)) { // i.e. whether we are currently parsing a function
+                    Integer argSlotId = this.currentScope.getParam(identifierName);
 
-                    if (argIdx != null)
-                        return ArgumentNodeFactory.ArgumentReadNodeGen.create(argIdx);
+                    if (argSlotId != null)
+                        return ArgumentNodeFactory.ArgumentReadNodeGen.create(argSlotId);
                 }
-                return LocalVariableNodeFactory.VariableReadNodeGen.create((String) currentToken.literal, this.localsIdMap.get((String) currentToken.literal)); }
+                return LocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, this.currentScope.getLocal(identifierName)); }
             default -> error("Invalid expression: primary token of type " + currentToken.type);
         }
 

@@ -2,6 +2,7 @@ package lox.nodes.functions;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.LoxContext;
+import lox.LoxLanguage;
 import lox.nodes.ExpressionNode;
 
 import java.util.List;
@@ -22,7 +23,7 @@ public class FunctionDeclarationNode extends ExpressionNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         LoxContext loxContext = LoxContext.get(this);
-        loxContext.globalScope.setFunction(this.name, this.parameters.size(), this.block);
+        loxContext.globalScope.setFunction(this.name, new FunctionRootNode(LoxLanguage.getCurrent(), block));
         return true;
     }
 }

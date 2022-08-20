@@ -1,3 +1,5 @@
 build/
 out/
 src_gen/
+
+.attach_pid* // IntelliJ is annoying sometimes

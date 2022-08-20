@@ -14,10 +14,11 @@ public class LoxLanguage extends TruffleLanguage<LoxContext> {
     public static final String LANG_ID = "tlox";
 
     @CompilationFinal
+    @SuppressWarnings("unused")
     private static LoxLanguage current;
 
     public static LoxLanguage getCurrent() {
-        return current; // TODO see if this can get removed for now
+        return current;
     }
 
     @Override
