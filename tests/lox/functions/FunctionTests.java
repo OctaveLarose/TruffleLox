@@ -35,7 +35,7 @@ public class FunctionTests extends ExpressionTestsBase {
         assertEquals(runDouble("fun addA(input) { var a = 24; return a + input; } var a = 42; add(a);"), 66.0, 0.001);
     }
 
-    @Ignore("noShadowing() not implemented, TODO")
+    @Ignore("IMPLEMENTED but needs a test handler that catches exceptions, TODO")
     @Test
     public void noShadowing() {
         // should throw!

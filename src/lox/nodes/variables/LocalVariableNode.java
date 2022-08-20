@@ -5,6 +5,7 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.nodes.ExpressionNode;
 
+// TODO specializations
 public abstract class LocalVariableNode extends ExpressionNode {
     protected String name; // Not sure that's necessary frankly
 
@@ -30,7 +31,6 @@ public abstract class LocalVariableNode extends ExpressionNode {
 
         @Specialization
         public Object read(VirtualFrame frame) {
-            // TODO check that it exists?
             return frame.getObject(slotId);
         }
     }
@@ -43,8 +43,6 @@ public abstract class LocalVariableNode extends ExpressionNode {
 
         @Specialization
         public Object write(VirtualFrame frame, Object value) {
-            if (frame.getObject(slotId) == null)
-                throw new RuntimeException("Attempted to write to undeclared variable " + this.getName());
             frame.setObject(slotId, value);
             return value;
         }

@@ -129,15 +129,13 @@ public class LoxParser extends Parser {
         FunctionContext functionContext = new FunctionContext((String)idToken.literal);
         functionContext.setParameters(parameters);
 
-        FunctionContext callingContext = this.currentScope;
+        FunctionContext outerContext = this.currentScope;
 
         this.currentScope = functionContext;
-
         ExpressionNode block = block();
+        this.currentScope = outerContext;
 
-        this.currentScope = callingContext;
-
-        return new FunctionDeclarationNode((String)idToken.literal, parameters, block);
+        return new FunctionDeclarationNode((String)idToken.literal, functionContext.getFrameDescriptor(), block);
     }
 
     private ExpressionNode varDecl() throws ParseError {
@@ -148,10 +146,12 @@ public class LoxParser extends Parser {
 
         String varName = (String) identifierToken.literal;
 
-        if (match(TokenType.SEMICOLON)) {
-            this.currentScope.setLocal(varName);
-            return new LocalVariableDecl(varName, this.currentScope.getLocal(varName), null);
-        }
+        // Not a fan, I'd rather have this be handled in setLocal() but it's another class that doesn't have access to error()
+        if (this.currentScope.isVarDefined(varName))
+            error("Already a variable with this name in the current scope");
+
+        if (match(TokenType.SEMICOLON))
+            return new LocalVariableDecl(this.currentScope.setLocal(varName));
 
         if (!match(TokenType.EQUALS))
             error("Expect an equals or semicolon after an identifier in a variable declaration");
@@ -161,8 +161,7 @@ public class LoxParser extends Parser {
         if (!match(TokenType.SEMICOLON))
             error("Unterminated variable declaration");
 
-        this.currentScope.setLocal(varName);
-        return new LocalVariableDecl(varName, this.currentScope.getLocal(varName), assignedExpr);
+        return new LocalVariableDecl(this.currentScope.setLocal(varName), assignedExpr);
     }
 
     private ExpressionNode statement() throws ParseError {

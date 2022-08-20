@@ -7,6 +7,7 @@ import lox.parser.Token;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+// To print errors a bit better. I haven't put much effort into it since this toy language has no users
 public class ParseErrorPrinter {
     public static void print(ParseError parseError, Source originalSource) throws IOException {
         Token failingToken = parseError.getFailingToken();
