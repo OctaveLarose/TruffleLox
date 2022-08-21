@@ -36,26 +36,28 @@ import static lox.parser.Token.TokenType;
                     | returnStmt
                     | whileStmt
                     | block
-    ifStmt ->       "if" "(" expression ")" statement ( "else" statement )? ;
+    ifStmt ->       "if" "(" expression ")" statement ( "else" statement )?
     exprStmt ->     expr ";"
-    returnStmt ->   "return" expression? ";" ;
-    whileStmt ->    "while" "(" expression ")" statement ;
+    returnStmt ->   "return" expression? ";"
+    whileStmt ->    "while" "(" expression ")" statement
 
     expr ->         assignment
     assignment ->   IDENTIFIER "=" assignment
                     | orExpr
-    orExpr ->       andExpr ( "or" andExpr )* ;
-    andExpr ->      equality ( "and" equality )* ;
-    equality ->     compare ( ( "!=" | "==" ) compare )* ;
-    compare ->      term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+    orExpr ->       andExpr ( "or" andExpr )*
+    andExpr ->      equality ( "and" equality )*
+    equality ->     compare ( ( "!=" | "==" ) compare )*
+    compare ->      term ( ( ">" | ">=" | "<" | "<=" ) term )*
     term ->         factor (( "-" | "+" ) factor)*
     factor ->       unary (( "/" | "*" ) unary)*
     unary ->        ("!" | "-") unary
-                    | primary
+                    | call
+    call ->         primary ( "(" arguments? ")" | "." IDENTIFIER )*
     primary ->      "true" | "false" | "nil"
                     | NUMBER | STRING | IDENTIFIER
                     | "(" expr ")"
  */
+
 public class LoxParser extends Parser {
     private final String ROOT_FUNCTION_NAME = "_main";
     private final String sourceStr;
@@ -403,8 +405,22 @@ public class LoxParser extends Parser {
                 default -> error("Should be unreachable");
             }
         }
-        return primary();
+        return call();
     }
+
+    private ExpressionNode call() throws ParseError {
+        ExpressionNode primary = primary();
+
+        while (match(TokenType.PAREN_OPEN)) {
+            List<ExpressionNode> arguments = arguments();
+            if (!(primary instanceof StringLiteralNode) && !(primary instanceof FunctionCallNode))
+                error("Attempting to call a non function");
+            primary = new FunctionCallNode(new FunctionLookupNode(primary), arguments); // Shouldn't always have to look it up, but it's a start
+        }
+
+        return primary;
+    }
+
 
     private ExpressionNode primary() throws ParseError {
         Token currentToken = advance();
@@ -424,17 +440,16 @@ public class LoxParser extends Parser {
             case IDENTIFIER -> {
                 String identifierName = (String)currentToken.literal;
 
-                if (match(TokenType.PAREN_OPEN)) { // TODO: should instead be handled in a call() function above
-                    List<ExpressionNode> arguments = arguments();
-                    return new FunctionCallNode(new FunctionLookupNode(identifierName), arguments); // Shouldn't always have to look it up, but it's a start
-                }
                 if (!this.currentScope.getName().equals(ROOT_FUNCTION_NAME)) { // i.e. whether we are currently parsing a function
                     Integer argSlotId = this.currentScope.getParam(identifierName);
-
                     if (argSlotId != null)
                         return ArgumentNodeFactory.ArgumentReadNodeGen.create(argSlotId);
                 }
-                return LocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, this.currentScope.getLocal(identifierName)); }
+
+                if (peek().type == TokenType.PAREN_OPEN) // A function call
+                    return new StringLiteralNode((String) currentToken.literal); // The function name should probably have its own node class
+                else
+                    return LocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, this.currentScope.getLocal(identifierName)); }
             default -> error("Invalid expression: primary token of type " + currentToken.type);
         }
 

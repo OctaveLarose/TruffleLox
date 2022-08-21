@@ -6,9 +6,9 @@ import java.util.HashMap;
 
 public final class GlobalScope {
 
-    static private final HashMap<String, Object> functions = new HashMap<>();
+    static private final HashMap<String, FunctionRootNode> functions = new HashMap<>();
 
-    public Object getFunction(String name) {
+    public FunctionRootNode getFunction(String name) {
         return functions.get(name);
     }
 

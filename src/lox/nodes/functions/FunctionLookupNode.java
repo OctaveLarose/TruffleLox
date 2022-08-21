@@ -5,16 +5,25 @@ import lox.LoxContext;
 import lox.nodes.ExpressionNode;
 
 public class FunctionLookupNode extends ExpressionNode {
+    private final ExpressionNode lookupExpression;
 
-    private final String functionName;
-
-    public FunctionLookupNode(String functionName) {
-        this.functionName = functionName;
+    public FunctionLookupNode(ExpressionNode expressionNode) {
+        this.lookupExpression = expressionNode;
     }
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         LoxContext context = LoxContext.get(this);
-        return context.globalScope.getFunction(this.functionName);
+        Object caller = this.lookupExpression.executeGeneric(frame);
+
+        if (!(caller instanceof String))
+            throw new RuntimeException("Attempting to call something without giving a string identifier");
+
+        FunctionRootNode funRootNode = context.globalScope.getFunction((String) this.lookupExpression.executeGeneric(frame));
+
+        if (funRootNode == null)
+            throw new RuntimeException("Function lookup failed");
+
+        return funRootNode;
     }
 }
