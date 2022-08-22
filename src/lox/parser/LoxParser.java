@@ -413,7 +413,7 @@ public class LoxParser extends Parser {
 
         while (match(TokenType.PAREN_OPEN)) {
             List<ExpressionNode> arguments = arguments();
-            if (!(primary instanceof StringLiteralNode) && !(primary instanceof FunctionCallNode))
+            if (!(primary instanceof FunctionNameLiteralNode) && !(primary instanceof FunctionCallNode))
                 error("Attempting to call a non function");
             primary = new FunctionCallNode(new FunctionLookupNode(primary), arguments); // Shouldn't always have to look it up, but it's a start
         }
@@ -447,7 +447,7 @@ public class LoxParser extends Parser {
                 }
 
                 if (peek().type == TokenType.PAREN_OPEN) // A function call
-                    return new StringLiteralNode((String) currentToken.literal); // The function name should probably have its own node class
+                    return new FunctionNameLiteralNode((String) currentToken.literal); // The function name should probably have its own node class
                 else
                     return LocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, this.currentScope.getLocal(identifierName)); }
             default -> error("Invalid expression: primary token of type " + currentToken.type);

@@ -41,4 +41,11 @@ public class FunctionTests extends ExpressionTestsBase {
         // should throw!
         assertEquals(runDouble("fun addA(input) { var input = 34; return input; } var a = 42; add(a);"), 66.0, 0.001);
     }
+
+    @Ignore("IMPLEMENTED but needs a test handler that catches exceptions, TODO")
+    @Test
+    public void noCallByString() {
+        // should throw!
+        assertEquals(runDouble("fun abc() { print 3; } \"abc\"();"), 66.0, 0.001);
+    }
 }
