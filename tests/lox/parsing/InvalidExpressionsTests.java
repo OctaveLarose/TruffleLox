@@ -1,12 +1,12 @@
 package lox.parsing;
 
 import lox.ExpressionTestsBase;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Ignore("InvalidExpressionsTests not ready yet")
+@Disabled("InvalidExpressionsTests not ready yet")
 public class InvalidExpressionsTests extends ExpressionTestsBase {
     @Test
     public void invalidSyntax() {

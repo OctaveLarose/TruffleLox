@@ -6,19 +6,27 @@
     <property name="classes.dir"   value="${build.dir}/classes"/>
     <property name="src_gen.dir"   value="src_gen"/>
     <property name="graal_jvm.dir"   value="/home/octavel/PhD_Programs/git_repos/graalvm-ce-java17-22.1.0/"/> <!-- Not exactly super flexible right now! -->
+    <property name="m2.dir"   value="/home/octavel/.m2/repository/org/"/> <!-- Ditto.. -->
 
     <path id="lox-cp">
         <pathelement path="${classes.dir}"/>
         <libfileset dir="${lib.dir}" includes="**/*.jar"/>
     </path>
 
+    <path id="tests-cp">
+        <path refid="lox-cp"/>
+        <libfileset dir="${m2.dir}/junit" includes="**/*.jar"/>
+        <libfileset dir="${m2.dir}/apiguardian" includes="**/*.jar"/>
+        <libfileset dir="${m2.dir}" includes="**/*.jar"/>
+    </path>
+
     <target name="compile">
         <mkdir dir="build/classes"/>
-        <delete file="src_gen"/>
+        <delete file="${src_gen.dir}"/>
         <javac srcdir="src" destdir="${classes.dir}" classpathref="lox-cp" debug="true" includeantruntime="false">
             <compilerarg line="-s ${src_gen.dir}" />
         </javac>
-        <javac srcdir="tests" destdir="${classes.dir}" classpathref="lox-cp" debug="true" includeantruntime="false"/>
+        <javac srcdir="tests" destdir="${classes.dir}" classpathref="tests-cp" debug="true" includeantruntime="false"/>
     </target>
 
     <resources id="add-opens-truffle">
@@ -39,19 +47,38 @@
     </target>
 
     <target name="unit-test" depends="compile">
-        <junit printsummary="true" showoutput="true" outputtoformatters="true" fork="true" jvm="${graal_jvm.dir}/bin/java">
+        <junitlauncher printsummary="true">
             <jvmarg line="-Dtruffle.class.path.append=${classes.dir}"/>
 
             <jvmarg line="${add-opens-truffle}"/>
 
-            <classpath refid="lox-cp"/>
-            <batchtest filtertrace="false">
+            <classpath refid="tests-cp"/>
+
+            <testclasses outputdir="${output.dir}">
+                <fork dir="">
+
+                </fork>
                 <fileset dir="tests">
                     <include name="**/*Tests.java"/>
                 </fileset>
-            </batchtest>
-            <formatter type="brief" usefile="false"/>
-        </junit>
+                <listener type="legacy-brief" sendSysOut="true"/>
+                <listener type="legacy-xml" sendSysErr="true" sendSysOut="true"/>
+            </testclasses>
+        </junitlauncher>
+<!--        <junit printsummary="true" showoutput="true" outputtoformatters="true" fork="true" jvm="${graal_jvm.dir}/bin/java">-->
+<!--            <jvmarg line="-Dtruffle.class.path.append=${classes.dir}"/>-->
+
+<!--            <jvmarg line="${add-opens-truffle}"/>-->
+
+<!--            <classpath refid="tests-cp"/>-->
+
+<!--            <batchtest filtertrace="false">-->
+<!--                <fileset dir="tests">-->
+<!--                    <include name="**/*Tests.java"/>-->
+<!--                </fileset>-->
+<!--            </batchtest>-->
+<!--            <formatter type="brief" usefile="false"/>-->
+<!--        </junit>-->
     </target>
 
     <target name="clean">

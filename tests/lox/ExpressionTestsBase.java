@@ -1,9 +1,9 @@
 package lox;
 
 import org.graalvm.polyglot.Context;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+@Disabled
 public abstract class ExpressionTestsBase {
     private static final Context context = Context.create();
 

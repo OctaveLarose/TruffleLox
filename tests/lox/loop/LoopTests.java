@@ -1,9 +1,9 @@
 package lox.loop;
 
 import lox.ExpressionTestsBase;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class LoopTests extends ExpressionTestsBase {
     @Test

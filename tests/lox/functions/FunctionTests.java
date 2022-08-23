@@ -1,10 +1,10 @@
 package lox.functions;
 
 import lox.ExpressionTestsBase;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FunctionTests extends ExpressionTestsBase {
     @Test
@@ -29,20 +29,20 @@ public class FunctionTests extends ExpressionTestsBase {
         assertEquals(runDouble("fun func(a, b, c) { c = 1; c = b = 2; a = b = c; return a + b + c; } func(1, 1, 1);"), 6, 0.001);
     }
 
-    @Ignore("noSharedState() not implemented, TODO")
+    @Disabled("noSharedState() not implemented, TODO")
     @Test
     public void noSharedState() {
         assertEquals(runDouble("fun addA(input) { var a = 24; return a + input; } var a = 42; add(a);"), 66.0, 0.001);
     }
 
-    @Ignore("IMPLEMENTED but needs a test handler that catches exceptions, TODO")
+    @Disabled("IMPLEMENTED but needs a test handler that catches exceptions, TODO")
     @Test
     public void noShadowing() {
         // should throw!
         assertEquals(runDouble("fun addA(input) { var input = 34; return input; } var a = 42; add(a);"), 66.0, 0.001);
     }
 
-    @Ignore("IMPLEMENTED but needs a test handler that catches exceptions, TODO")
+    @Disabled("IMPLEMENTED but needs a test handler that catches exceptions, TODO")
     @Test
     public void noCallByString() {
         // should throw!
