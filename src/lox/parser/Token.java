@@ -9,8 +9,8 @@ public class Token {
         NUMBER, STRING, IDENTIFIER,
         TRUE, FALSE, NIL,
         IF, ELSE, WHILE, FOR,
-        SEMICOLON, COMMA, BANG, AND, OR,
-        VAR, FUN, PRINT, RETURN, EOF
+        SEMICOLON, COMMA, BANG, AND, OR, DOT,
+        VAR, CLASS, SUPER, FUN, PRINT, RETURN, EOF
     }
 
     public final TokenType type;

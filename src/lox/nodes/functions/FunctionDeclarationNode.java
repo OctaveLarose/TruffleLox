@@ -4,7 +4,9 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.LoxContext;
 import lox.LoxLanguage;
+import lox.nodes.ClassDeclarationNode;
 import lox.nodes.ExpressionNode;
+import lox.objects.LoxClass;
 
 public class FunctionDeclarationNode extends ExpressionNode {
 
@@ -12,16 +14,28 @@ public class FunctionDeclarationNode extends ExpressionNode {
     private final FrameDescriptor frameDescriptor;
     private final ExpressionNode block;
 
+    private boolean inObject;
+
     public FunctionDeclarationNode(String funName, FrameDescriptor frameDescriptor, ExpressionNode funBlock) {
         this.name = funName;
         this.frameDescriptor = frameDescriptor;
         this.block = funBlock;
     }
 
+    public void setIsMethod(boolean val) {
+        this.inObject = val;
+    }
+
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         LoxContext loxContext = LoxContext.get(this);
-        loxContext.globalScope.setFunction(this.name, new FunctionRootNode(LoxLanguage.getCurrent(), frameDescriptor, block));
-        return true;
+        FunctionRootNode rootNode = new FunctionRootNode(LoxLanguage.getCurrent(), frameDescriptor, block);
+
+        if (inObject) // If it's an object, we return it and let the object handle it. Not sure about that approach though, kinda bad
+            return rootNode;
+        else
+            loxContext.globalScope.setFunction(this.name, rootNode);
+
+        return null;
     }
 }

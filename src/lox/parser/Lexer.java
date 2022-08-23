@@ -32,6 +32,8 @@ public class Lexer {
         put("return", TokenType.RETURN);
         put("print",  TokenType.PRINT);
         put("var",    TokenType.VAR);
+        put("class",  TokenType.CLASS);
+        put("super",  TokenType.SUPER);
     }};
 
     List<Token> tokens;
@@ -96,6 +98,7 @@ public class Lexer {
                 case '-' -> addToken(TokenType.MINUS);
                 case ';' -> addToken(TokenType.SEMICOLON);
                 case ',' -> addToken(TokenType.COMMA);
+                case '.' -> addToken(TokenType.DOT);
                 case '=' -> {
                     if (this.peek() == '=') {
                         addToken(TokenType.DOUBLE_EQUALS);

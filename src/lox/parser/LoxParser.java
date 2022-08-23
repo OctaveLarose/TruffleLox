@@ -22,9 +22,12 @@ import static lox.parser.Token.TokenType;
     Grammar:
 
     program ->      statement* EOF
-    declaration ->  funDecl
+    declaration ->  classDecl
+                    | funDecl
                     | varDecl
                     | statement
+
+    classDecl ->    "class" IDENTIFIER ( "<" IDENTIFIER )? "{" function* "}" ;
 
     funDecl ->      "fun" "{" parameters? "}" block
     block ->        "{" declaration* "}"
@@ -106,7 +109,9 @@ public class LoxParser extends Parser {
     }
 
     private ExpressionNode declaration() throws ParseError {
-        if (match(TokenType.FUN)) {
+        if (match(TokenType.CLASS)) {
+            return classDecl();
+        } else if (match(TokenType.FUN)) {
             return funDecl();
         } else if (match(TokenType.VAR)) {
             return varDecl();
@@ -114,7 +119,41 @@ public class LoxParser extends Parser {
         return statement();
     }
 
-    private ExpressionNode funDecl() throws ParseError {
+    private ClassDeclarationNode classDecl() throws ParseError {
+//        classDecl ->    "class" IDENTIFIER ( "<" IDENTIFIER )? "{" function* "}" ;
+        Token identifierToken = peek();
+
+        if (!match(TokenType.IDENTIFIER))
+            error("Expect an identifier after class declaration");
+
+        String className = (String) identifierToken.literal;
+
+        String extendsClass = null;
+        if (match(TokenType.LESSER_THAN)) {
+            Token superClassToken = peek();
+            if (!match(TokenType.IDENTIFIER))
+                error("Expect identifier after superclass declaration");
+            extendsClass = (String) superClassToken.literal;
+        }
+
+        if (!match(TokenType.CURLY_BRACKET_OPEN))
+            error("Expect a { to define the class body");
+
+
+        List<FunctionDeclarationNode> methods = new ArrayList<>();
+        while (!isAtEnd() && !match(TokenType.CURLY_BRACKET_CLOSE)) {
+            FunctionDeclarationNode funDecl = funDecl();
+            funDecl.setIsMethod(true);
+            methods.add(funDecl);
+        }
+
+        if (isAtEnd())
+            error("Unterminated class body");
+
+        return new ClassDeclarationNode(className, extendsClass, methods);
+    }
+
+    private FunctionDeclarationNode funDecl() throws ParseError {
         Token idToken = this.peek();
 
         if (!match(TokenType.IDENTIFIER))
@@ -140,7 +179,7 @@ public class LoxParser extends Parser {
         return new FunctionDeclarationNode((String)idToken.literal, functionContext.getFrameDescriptor(), block);
     }
 
-    private ExpressionNode varDecl() throws ParseError {
+    private LocalVariableDecl varDecl() throws ParseError {
         Token identifierToken = peek();
 
         if (!match(TokenType.IDENTIFIER))
@@ -183,7 +222,7 @@ public class LoxParser extends Parser {
             return exprStatement();
     }
 
-    private ExpressionNode forStmt() throws ParseError {
+    private ForNode forStmt() throws ParseError {
         // forStmt        → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement ;
 
         if (!match(TokenType.PAREN_OPEN))
@@ -235,7 +274,7 @@ public class LoxParser extends Parser {
         return new IfNode(conditionalExpression, consequent);
     }
 
-    private ExpressionNode whileStmt() throws ParseError {
+    private WhileNode whileStmt() throws ParseError {
         // "while" "(" expression ")" statement ;
         if (!match(TokenType.PAREN_OPEN))
             error("No open parenthesis after while");
@@ -250,12 +289,12 @@ public class LoxParser extends Parser {
         return new WhileNode(cond, statement);
     }
 
-    private ExpressionNode printStmt() throws ParseError {
+    private PrintStatement printStmt() throws ParseError {
         ExpressionNode expr = exprStatement();
         return PrintStatementFactory.create(expr);
     }
 
-    private ExpressionNode block() throws ParseError {
+    private BlockNode block() throws ParseError {
         List<ExpressionNode> declarations = new ArrayList<>();
 
         while (!isAtEnd() && !match(TokenType.CURLY_BRACKET_CLOSE)) {

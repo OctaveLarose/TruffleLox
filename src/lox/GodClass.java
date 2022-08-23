@@ -6,7 +6,14 @@ import org.graalvm.polyglot.Context;
 public class GodClass {
 
     static public void main(String[] args) {
-        runREPL();
+//        runREPL();
+        evalString("class TestClass {\n" +
+                "  testMethod() {\n" +
+                "    return \"wahoo\";\n" +
+                "  }\n" +
+                "}\n" +
+                "\n" +
+                "print TestClass;");
     }
 
     static public void runREPL() {

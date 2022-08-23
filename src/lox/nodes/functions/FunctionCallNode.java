@@ -3,7 +3,7 @@ package lox.nodes.functions;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.nodes.ExpressionNode;
 import lox.nodes.ReturnException;
-import lox.objects.FunctionObject;
+import lox.objects.LoxFunction;
 
 import java.util.List;
 
@@ -30,7 +30,7 @@ public class FunctionCallNode extends ExpressionNode {
         }
 
         try {
-            return this.dispatchNode.executeDispatch(new FunctionObject(function.getCallTarget()), evaluatedArgs);
+            return this.dispatchNode.executeDispatch(new LoxFunction(function.getCallTarget()), evaluatedArgs);
         } catch (ReturnException returnException) {
             return returnException.getResult();
         }
