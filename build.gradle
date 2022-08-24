@@ -5,7 +5,6 @@ plugins {
     id 'idea'
 }
 
-def BUILD_DIR = 'build'
 def CLASSES_DIR = 'build/classes'
 def SRC_DIR = 'src'
 def SRC_GEN_DIR = 'src_gen'
@@ -14,6 +13,15 @@ def TESTS_DIR = 'tests'
 sourceSets {
     main { java { srcDirs = [SRC_DIR, SRC_GEN_DIR] } }
     test { java { srcDirs = [TESTS_DIR] } }
+}
+
+compileJava {
+    options.compilerArgs << "-s"
+    options.compilerArgs << SRC_GEN_DIR
+
+    doFirst {
+        file(new File(projectDir, SRC_GEN_DIR)).mkdirs()
+    }
 }
 
 repositories {
@@ -31,30 +39,24 @@ dependencies {
     implementation files('libs/truffle-dsl-processor.jar')
 }
 
-//task clean {
-//    delete BUILD_DIR, SRC_GEN_DIR
-//}
+run {
+    jvmArgs "-Dtruffle.class.path.append=" + CLASSES_DIR
+    standardInput = System.in
+}
 
 test {
     jvmArgs "-Dtruffle.class.path.append=" + CLASSES_DIR
+    jvmArgs "--add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"
+    jvmArgs "--add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED"
+    jvmArgs "--add-opens=org.graalvm.truffle/com.oracle.truffle.api.dsl=ALL-UNNAMED"
     useJUnitPlatform()
     testLogging {
         events "passed", "skipped", "failed"
     }
 }
 
-//java.sourceCompatibility = JavaVersion.VERSION_17
-//targetCompatibility = JavaVersion.VERSION_17
-
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
-
-applicationDefaultJvmArgs = ["-Dtruffle.class.path.append=" + CLASSES_DIR]
-
-run{
-    standardInput = System.in
-    args '-usejavacp'
+clean.doFirst {
+    delete SRC_GEN_DIR
 }
 
 mainClassName = 'lox.GodClass'
