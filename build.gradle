@@ -1,0 +1,60 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'application'
+    id 'idea'
+}
+
+def BUILD_DIR = 'build'
+def CLASSES_DIR = 'build/classes'
+def SRC_DIR = 'src'
+def SRC_GEN_DIR = 'src_gen'
+def TESTS_DIR = 'tests'
+
+sourceSets {
+    main { java { srcDirs = [SRC_DIR, SRC_GEN_DIR] } }
+    test { java { srcDirs = [TESTS_DIR] } }
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+    implementation files('libs/graal.jar')
+    implementation files('libs/graal-sdk.jar')
+    implementation files('libs/truffle-api.jar')
+    implementation files('libs/truffle-dsl-processor.jar')
+}
+
+//task clean {
+//    delete BUILD_DIR, SRC_GEN_DIR
+//}
+
+test {
+    jvmArgs "-Dtruffle.class.path.append=" + CLASSES_DIR
+    useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+//java.sourceCompatibility = JavaVersion.VERSION_17
+//targetCompatibility = JavaVersion.VERSION_17
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+applicationDefaultJvmArgs = ["-Dtruffle.class.path.append=" + CLASSES_DIR]
+
+run{
+    standardInput = System.in
+    args '-usejavacp'
+}
+
+mainClassName = 'lox.GodClass'

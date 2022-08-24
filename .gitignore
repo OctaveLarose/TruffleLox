@@ -1,3 +1,8 @@
+.gradle/
+gradle/
+gradlew.bat
+
+
 build/
 out/
 src_gen/
