@@ -15,14 +15,7 @@ sourceSets {
     test { java { srcDirs = [TESTS_DIR] } }
 }
 
-compileJava {
-    options.compilerArgs << "-s"
-    options.compilerArgs << SRC_GEN_DIR
-
-    doFirst {
-        file(new File(projectDir, SRC_GEN_DIR)).mkdirs()
-    }
-}
+compileJava.options.compilerArgs.addAll(["-s", SRC_GEN_DIR])
 
 repositories {
     mavenLocal()
@@ -36,7 +29,7 @@ dependencies {
     implementation files('libs/graal.jar')
     implementation files('libs/graal-sdk.jar')
     implementation files('libs/truffle-api.jar')
-    implementation files('libs/truffle-dsl-processor.jar')
+    annotationProcessor files('libs/truffle-dsl-processor.jar')
 }
 
 run {
@@ -45,6 +38,7 @@ run {
 }
 
 test {
+//    jvmArgs "-Dtruffle.class.path.append=" + sourceSets.main.java.outputDir
     jvmArgs "-Dtruffle.class.path.append=" + CLASSES_DIR
     jvmArgs "--add-opens=org.graalvm.truffle/com.oracle.truffle.api=ALL-UNNAMED"
     jvmArgs "--add-opens=org.graalvm.truffle/com.oracle.truffle.api.nodes=ALL-UNNAMED"
