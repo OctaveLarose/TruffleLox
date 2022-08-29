@@ -3,6 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/TruffleLox.iml" filepath="$PROJECT_DIR$/.idea/TruffleLox.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/TruffleLox.main.iml" filepath="$PROJECT_DIR$/.idea/modules/TruffleLox.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/TruffleLox.test.iml" filepath="$PROJECT_DIR$/.idea/modules/TruffleLox.test.iml" />
     </modules>
   </component>
 </project>

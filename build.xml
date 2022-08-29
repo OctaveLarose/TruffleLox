@@ -1,4 +1,4 @@
-<project name="trufflelox" basedir="." default="compile">
+<project name="trufflelox" basedir="." default="run" xmlns:ivy="antlib:org.apache.ivy.ant">
 
     <property name="src.dir"     location="src"/>
     <property name="lib.dir"     location="libs" />
@@ -7,18 +7,29 @@
     <property name="src_gen.dir"   value="src_gen"/>
     <property name="graal_jvm.dir"   value="/home/octavel/PhD_Programs/git_repos/graalvm-ce-java17-22.1.0/"/> <!-- Not exactly super flexible right now! -->
 
+    <target name="resolve" description="resolve dependencies">
+        <ivy:resolve />
+        <ivy:cachepath pathid="ivy.classpath" />
+    </target>
+
     <path id="lox-cp">
         <pathelement path="${classes.dir}"/>
         <libfileset dir="${lib.dir}" includes="**/*.jar"/>
     </path>
 
-    <target name="compile">
+    <path id="tests-cp">
+        <path refid="lox-cp"/>
+        <path refid="ivy.classpath"/>
+        <file file="/usr/share/ant/lib/ant-junit.jar"/>
+    </path>
+
+    <target name="compile" depends="resolve">
         <mkdir dir="build/classes"/>
-        <delete file="src_gen"/>
+        <delete file="${src_gen.dir}"/>
         <javac srcdir="src" destdir="${classes.dir}" classpathref="lox-cp" debug="true" includeantruntime="false">
             <compilerarg line="-s ${src_gen.dir}" />
         </javac>
-        <javac srcdir="tests" destdir="${classes.dir}" classpathref="lox-cp" debug="true" includeantruntime="false"/>
+        <javac srcdir="tests" destdir="${classes.dir}" classpathref="tests-cp" debug="true" includeantruntime="false"/>
     </target>
 
     <resources id="add-opens-truffle">
@@ -27,6 +38,10 @@
         <string>--add-opens=org.graalvm.truffle/com.oracle.truffle.api.dsl=ALL-UNNAMED</string>
     </resources>
     <pathconvert property="add-opens-truffle" refid="add-opens-truffle" pathsep=" " />
+
+<!--    <target name="resolve" description="&ndash;&gt; retreive dependencies with ivy">-->
+<!--        <ivy:retrieve/>-->
+<!--    </target>-->
 
     <target name="run" depends="compile">
         <java classname="lox.GodClass" jvm="${graal_jvm.dir}/bin/java" fork="true">
@@ -39,19 +54,25 @@
     </target>
 
     <target name="unit-test" depends="compile">
-        <junit printsummary="true" showoutput="true" outputtoformatters="true" fork="true" jvm="${graal_jvm.dir}/bin/java">
+        <pathconvert  property="testoutput" refid="tests-cp"/>
+        <echo>Path = ${testoutput}</echo>
+        <junitlauncher printsummary="true" >
             <jvmarg line="-Dtruffle.class.path.append=${classes.dir}"/>
 
             <jvmarg line="${add-opens-truffle}"/>
 
-            <classpath refid="lox-cp"/>
-            <batchtest filtertrace="false">
+            <classpath refid="tests-cp"/>
+
+            <testclasses outputdir="${output.dir}">
+                <fork dir="">
+                </fork>
                 <fileset dir="tests">
                     <include name="**/*Tests.java"/>
                 </fileset>
-            </batchtest>
-            <formatter type="brief" usefile="false"/>
-        </junit>
+                <listener type="legacy-brief" sendSysOut="true"/>
+                <listener type="legacy-xml" sendSysErr="true" sendSysOut="true"/>
+                </testclasses>
+        </junitlauncher>
     </target>
 
     <target name="clean">
