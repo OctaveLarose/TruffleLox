@@ -236,7 +236,6 @@ public class LoxParser extends Parser {
                 error("for statement expects an initializer or a ';'");
         }
 
-
         ExpressionNode termination = null;
         if (peek().type != TokenType.SEMICOLON)
             termination = expression();
@@ -477,7 +476,7 @@ public class LoxParser extends Parser {
                 return expr;
             }
             case IDENTIFIER -> {
-                String identifierName = (String)currentToken.literal;
+                String identifierName = (String) currentToken.literal;
 
                 if (!this.currentScope.getName().equals(ROOT_FUNCTION_NAME)) { // i.e. whether we are currently parsing a function
                     Integer argSlotId = this.currentScope.getParam(identifierName);
@@ -486,13 +485,21 @@ public class LoxParser extends Parser {
                 }
 
                 if (peek().type == TokenType.PAREN_OPEN) // A function call
-                    return new FunctionNameLiteralNode((String) currentToken.literal); // The function name should probably have its own node class
+                    return new FunctionNameLiteralNode((String) currentToken.literal);
                 else
-                    return LocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, this.currentScope.getLocal(identifierName)); }
+                    return resolveIdentifier(identifierName);
+            }
             default -> error("Invalid expression: primary token of type " + currentToken.type);
         }
 
         return null; // Unreachable
+    }
+
+    private ExpressionNode resolveIdentifier(String identifierName) {
+        if (this.currentScope.getLocal(identifierName) != null)
+            return LocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, this.currentScope.getLocal(identifierName));
+
+        return new IdentifierNode(identifierName);
     }
 
     private List<ExpressionNode> arguments() throws ParseError {

@@ -4,9 +4,7 @@ import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.LoxContext;
 import lox.LoxLanguage;
-import lox.nodes.ClassDeclarationNode;
 import lox.nodes.ExpressionNode;
-import lox.objects.LoxClass;
 
 public class FunctionDeclarationNode extends ExpressionNode {
 
@@ -29,7 +27,7 @@ public class FunctionDeclarationNode extends ExpressionNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         LoxContext loxContext = LoxContext.get(this);
-        FunctionRootNode rootNode = new FunctionRootNode(LoxLanguage.getCurrent(), frameDescriptor, block);
+        FunctionRootNode rootNode = new FunctionRootNode(LoxLanguage.getCurrent(), frameDescriptor, name, block);
 
         if (inObject) // If it's an object, we return it and let the object handle it. Not sure about that approach though, kinda bad
             return rootNode;

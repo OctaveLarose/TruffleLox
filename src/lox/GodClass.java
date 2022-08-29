@@ -7,15 +7,16 @@ public class GodClass {
 
     static public void main(String[] args) {
 //        runREPL();
-        evalString("class TestClass {\n" +
-                "  testMethod() {\n" +
-                "    return \"wahoo\";\n" +
-                "  }\n" +
-                "}\n" +
-                "\n" +
-                "print TestClass;");
+        evalString("""
+                class TestClass {  testMethod() {
+                    return "wahoo";
+                  }
+                }
+
+                var a = TestClass();""");
     }
 
+    @SuppressWarnings("unused") // Used for debugging
     static public void runREPL() {
         LoxREPL.runLoop();
     }
