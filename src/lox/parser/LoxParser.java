@@ -1,5 +1,7 @@
 package lox.parser;
 
+import lox.nodes.calls.CallNode;
+import lox.nodes.calls.LookupNode;
 import lox.nodes.*; // Bad habit but useful in this context of generated classes. TODO to be changed later though
 import lox.nodes.arithmetic.*;
 import lox.nodes.comparison.*;
@@ -451,9 +453,8 @@ public class LoxParser extends Parser {
 
         while (match(TokenType.PAREN_OPEN)) {
             List<ExpressionNode> arguments = arguments();
-            if (!(primary instanceof FunctionNameLiteralNode) && !(primary instanceof FunctionCallNode))
-                error("Attempting to call a non function");
-            primary = new FunctionCallNode(new FunctionLookupNode(primary), arguments); // Shouldn't always have to look it up, but it's a start
+
+            primary = new CallNode(new LookupNode(primary), arguments); // Shouldn't always have to look it up, but it's a start
         }
 
         return primary;

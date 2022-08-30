@@ -2,10 +2,9 @@ package lox.nodes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.LoxContext;
-import lox.LoxLanguage;
 import lox.nodes.functions.FunctionDeclarationNode;
 import lox.nodes.functions.FunctionRootNode;
-import lox.objects.LoxClass;
+import lox.objects.LoxClassObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,10 +29,7 @@ public class ClassDeclarationNode extends ExpressionNode {
         for (FunctionDeclarationNode funDecl: this.methods)
             functionRootNodes.add((FunctionRootNode) funDecl.executeGeneric(frame));
 
-        loxContext.globalScope.setClass(this.name, new LoxClass(name, superclassName, functionRootNodes));
+        loxContext.globalScope.setClass(this.name, new LoxClassObject(name, superclassName, functionRootNodes));
         return null;
-    }
-
-    public void addMethod(FunctionRootNode rootNode) {
     }
 }
