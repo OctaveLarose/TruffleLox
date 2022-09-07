@@ -14,4 +14,29 @@ public class ClassTests extends ExpressionTestsBase {
 
         assertEquals(runString(printClass), "TestClass");
     }
+
+    @Test
+    public void basicMethodCalls() {
+        String basicMethodCall1 = """
+                class TestClass {
+                    testMethod() {
+                        return "All good";
+                    }
+                }
+                var a = TestClass(); a.testMethod();""";
+
+        String basicMethodCall2 = """
+                class AAAAAAAAAAAAA {
+                    someRandomMethodName() {
+                        return 42 * 4;
+                    }
+                    anotherMethod() {
+                        return -121;
+                    }
+                }
+                var a = AAAAAAAAAAAAA(); a.someRandomMethodName() + a.anotherMethod();""";
+
+        assertEquals(runString(basicMethodCall1), "All good");
+        assertEquals(runDouble(basicMethodCall2), 42 * 4 - 121, 0.01);
+    }
 }

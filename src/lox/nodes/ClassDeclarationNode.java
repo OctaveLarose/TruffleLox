@@ -6,8 +6,9 @@ import lox.nodes.functions.FunctionDeclarationNode;
 import lox.nodes.functions.FunctionRootNode;
 import lox.objects.LoxClassObject;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ClassDeclarationNode extends ExpressionNode {
     private final String name;
@@ -24,12 +25,12 @@ public class ClassDeclarationNode extends ExpressionNode {
     @Override
     public Object executeGeneric(VirtualFrame frame) {
         LoxContext loxContext = LoxContext.get(this);
-        List<FunctionRootNode> functionRootNodes = new ArrayList<>();
+        Map<String, FunctionRootNode> methodsMap = new HashMap<>();
 
         for (FunctionDeclarationNode funDecl: this.methods)
-            functionRootNodes.add((FunctionRootNode) funDecl.executeGeneric(frame));
+            methodsMap.put(funDecl.getName(), (FunctionRootNode) funDecl.executeGeneric(frame));
 
-        loxContext.globalScope.setClass(this.name, new LoxClassObject(name, superclassName, functionRootNodes));
+        loxContext.globalScope.setClass(this.name, new LoxClassObject(name, superclassName, methodsMap));
         return null;
     }
 }

@@ -36,4 +36,8 @@ public class FunctionDeclarationNode extends ExpressionNode {
 
         return null;
     }
+
+    public String getName() {
+        return this.name;
+    }
 }

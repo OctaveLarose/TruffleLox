@@ -4,6 +4,7 @@ import lox.nodes.calls.CallNode;
 import lox.nodes.calls.LookupNode;
 import lox.nodes.*; // Bad habit but useful in this context of generated classes. TODO to be changed later though
 import lox.nodes.arithmetic.*;
+import lox.nodes.classes.GetObjectPropertyNode;
 import lox.nodes.comparison.*;
 import lox.nodes.conditionals.*;
 import lox.nodes.functions.*;
@@ -451,10 +452,16 @@ public class LoxParser extends Parser {
     private ExpressionNode call() throws ParseError {
         ExpressionNode primary = primary();
 
-        while (match(TokenType.PAREN_OPEN)) {
-            List<ExpressionNode> arguments = arguments();
+        while (match(TokenType.PAREN_OPEN) || match(TokenType.DOT)) {
+            if (previous().type == TokenType.PAREN_OPEN) {
+                List<ExpressionNode> arguments = arguments();
+                primary = new CallNode(new LookupNode(primary), arguments); // Shouldn't always have to look it up, but it's a start
+            } else if (previous().type == TokenType.DOT) {
+                if (!match(TokenType.IDENTIFIER))
+                    error("Expected an identifier after a \".\"");
 
-            primary = new CallNode(new LookupNode(primary), arguments); // Shouldn't always have to look it up, but it's a start
+                primary = new GetObjectPropertyNode(primary, (String) previous().literal);
+            }
         }
 
         return primary;

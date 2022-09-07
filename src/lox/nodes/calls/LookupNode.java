@@ -1,6 +1,7 @@
 package lox.nodes.calls;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.nodes.ExecutableNode;
 import lox.LoxContext;
 import lox.nodes.ExpressionNode;
 import lox.nodes.functions.FunctionRootNode;
@@ -18,8 +19,11 @@ public class LookupNode extends ExpressionNode {
         LoxContext context = LoxContext.get(this);
         Object caller = this.lookupExpr.executeGeneric(frame);
 
+        if (caller instanceof ExecutableNode) // or just RootNode? or just FunctionRootNode? No idea
+            return caller;
+
         if (!(caller instanceof String callerString))
-            throw new RuntimeException("Attempting to call something without giving a string identifier");
+            throw new RuntimeException("Attempting to call something from something other than an identifier");
 
         Object lookup = lookupFunction(callerString, context);
         if (lookup != null)

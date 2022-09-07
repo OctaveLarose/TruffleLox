@@ -1,27 +1,26 @@
 package lox.objects;
 
-import lox.nodes.classes.ClassInstanceNode;
 import lox.nodes.functions.FunctionRootNode;
 
-import java.util.List;
+import java.util.Map;
 
 public class LoxClassObject {
     private final String name;
     private final String superclassName;
-    private final List<FunctionRootNode> methods;
+    private final Map<String, FunctionRootNode> methods;
 
-    public LoxClassObject(String name, String superclassName, List<FunctionRootNode> methods) {
+    public LoxClassObject(String name, String superclassName, Map<String, FunctionRootNode> methods) {
         this.name = name;
-        this.superclassName = superclassName;
+        this.superclassName = superclassName; // TODO should be an object and not a name. Easy fix
         this.methods = methods;
     }
 
-    public ClassInstanceNode createInstance(Object[] evaluatedArgs) {
-        return new ClassInstanceNode(this, evaluatedArgs);
+    public LoxClassInstance createInstance(Object[] evaluatedArgs) {
+        return new LoxClassInstance(this, evaluatedArgs);
     }
 
     public FunctionRootNode getMethod(String name) {
-        return this.methods.get(0); // TODO
+        return this.methods.getOrDefault(name, null);
     }
 
     @Override

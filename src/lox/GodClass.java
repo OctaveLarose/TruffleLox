@@ -13,7 +13,7 @@ public class GodClass {
                   }
                 }
 
-                var a = TestClass();""");
+                var a = TestClass(); a.testMethod();""");
     }
 
     @SuppressWarnings("unused") // Used for debugging
