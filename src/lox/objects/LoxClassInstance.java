@@ -6,7 +6,7 @@ import java.util.HashMap;
 public class LoxClassInstance {
 
     private final LoxClassObject classObject;
-    private final HashMap<String, Object> attributes = new HashMap<>();
+    private final HashMap<String, Object> properties = new HashMap<>();
 
     public LoxClassInstance(LoxClassObject classObject, Object[] evaluatedArgs) {
         this.classObject = classObject;
@@ -17,13 +17,18 @@ public class LoxClassInstance {
         return this.classObject.getMethod(methodName);
     }
 
-    public Object getAttribute(String attrName) {
-        if (!this.attributes.containsKey(attrName))
+    public Object getProperty(String attrName) {
+        if (!this.properties.containsKey(attrName))
             return null;
-        return this.attributes.get(attrName);
+        return this.properties.get(attrName);
     }
 
-    public void setAttribute(String attrName, Object value) {
-        this.attributes.put(attrName, value);
+    public void setProperty(String attrName, Object value) {
+        this.properties.put(attrName, value);
+    }
+
+    @Override
+    public String toString() {
+        return classObject.toString() + " instance";
     }
 }

@@ -25,7 +25,7 @@ public class FunctionTests extends ExpressionTestsBase {
 
     @Test
     public void printFunction() {
-        assertEquals(runString("fun abc() { return 3; } abc;"), "<fn abc>");
+        assertEquals(runWithOutput("fun abc() { return 3; } print abc;"), "<fn abc>\n");
     }
 
     @Test
