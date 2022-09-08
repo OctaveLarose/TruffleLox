@@ -55,13 +55,14 @@ public class ClassTests extends ExpressionTestsBase {
         assertEquals(runDouble(fieldAccess2), -1000, 0.01);
     }
 
-   /* @Test
+    @Test
     public void replaceMethod() {
-//        String replaceMethod = """
-//                class Abc { sneakyReferenceToPopularMedia() { return "insert reference here"; }}
-//                var a = Abc();
-//                a.sneakyReferenceToPopularMedia = fun wow() { return "a better reference actually"; }
-//                a.sneakyReferenceToPopularMedia();""";
+        String replaceMethod = """
+                class Abc { sneakyReferenceToPopularMedia() { return "insert reference here"; }}
+                fun wow() { return "a better reference actually"; }
+                var a = Abc();
+                a.sneakyReferenceToPopularMedia = wow;
+                a.sneakyReferenceToPopularMedia();""";
 
         String replaceNonMethod = """
                 class Abc { sneakyReferenceToPopularMedia() { return "insert reference here"; }}
@@ -69,7 +70,7 @@ public class ClassTests extends ExpressionTestsBase {
                 a.sneakyReferenceToPopularMedia = "a better reference actually and not even a method";
                 a.sneakyReferenceToPopularMedia;""";
 
-//        assertEquals(runString(replaceMethod), "a better reference actually");
-        assertEquals(runString(replaceNonMethod), "a better reference actually");
-    }*/
+        assertEquals(runString(replaceMethod), "a better reference actually");
+        assertEquals(runString(replaceNonMethod), "a better reference actually and not even a method");
+    }
 }

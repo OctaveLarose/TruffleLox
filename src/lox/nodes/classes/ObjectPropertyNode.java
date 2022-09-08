@@ -38,15 +38,15 @@ public abstract class ObjectPropertyNode extends ExpressionNode  {
             if (!(classObj instanceof LoxClassInstance classInstance))
                 throw new RuntimeException("Trying to access an attribute from a non-class");
 
+            Object property = classInstance.getProperty(this.propertyName);
+            if (property != null)
+                return property;
+
             Object method = classInstance.getMethod(this.propertyName);
             if (method != null)
                 return method;
 
-            Object attribute = classInstance.getAttribute(this.propertyName);
-            if (attribute == null)
-                throw new RuntimeException("Attribute does not exist: " + this.propertyName);
-
-            return attribute;
+            throw new RuntimeException("Method/field does not exist: " + this.propertyName);
         }
     }
 
@@ -64,7 +64,7 @@ public abstract class ObjectPropertyNode extends ExpressionNode  {
             if (!(classObj instanceof LoxClassInstance classInstance))
                 throw new RuntimeException("Trying to access an attribute from a non-class");
 
-            classInstance.setAttribute(propertyName, value);
+            classInstance.setProperty(propertyName, value);
 
             return value;
         }

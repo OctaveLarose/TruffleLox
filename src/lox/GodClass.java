@@ -8,11 +8,11 @@ public class GodClass {
     static public void main(String[] args) {
 //        runREPL();
         evalString("""
-                class TestClass {}
-
-                var a = TestClass();
-                a.someVar = 42;
-                a.someVar;""");
+                class Abc { sneakyReferenceToPopularMedia() { return "insert reference here"; }}
+                fun wow() { return "a better reference actually"; }
+                var a = Abc();
+                a.sneakyReferenceToPopularMedia = wow;
+                a.sneakyReferenceToPopularMedia();""");
     }
 
     @SuppressWarnings("unused") // Used for debugging

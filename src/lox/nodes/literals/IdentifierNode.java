@@ -12,21 +12,15 @@ public class IdentifierNode extends ExpressionNode {
         this.identifierName = identifierName;
     }
 
-    public String executeString() {
+    @Override
+    public Object executeGeneric(VirtualFrame frame) {
         LoxContext loxContext = LoxContext.get(this);
         FunctionRootNode funNode = loxContext.globalScope.getFunction(identifierName);
         if (funNode != null)
-            return funNode.toString();
-
-        // TODO class instances must print "CLASSNAME instance"
+            return funNode;
 
         // In general this class calls for specializations, and probably renaming since it's just about PRINTING an identifier so far
 
         return identifierName;
-    }
-
-    @Override
-    public Object executeGeneric(VirtualFrame frame) {
-        return executeString();
     }
 }
