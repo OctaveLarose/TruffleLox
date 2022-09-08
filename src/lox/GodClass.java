@@ -6,13 +6,7 @@ import org.graalvm.polyglot.Context;
 public class GodClass {
 
     static public void main(String[] args) {
-//        runREPL();
-        evalString("""
-                class Abc { sneakyReferenceToPopularMedia() { return "insert reference here"; }}
-                fun wow() { return "a better reference actually"; }
-                var a = Abc();
-                a.sneakyReferenceToPopularMedia = wow;
-                a.sneakyReferenceToPopularMedia();""");
+        runREPL();
     }
 
     @SuppressWarnings("unused") // Used for debugging
