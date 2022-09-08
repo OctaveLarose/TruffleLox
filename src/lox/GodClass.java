@@ -8,12 +8,11 @@ public class GodClass {
     static public void main(String[] args) {
 //        runREPL();
         evalString("""
-                class TestClass {  testMethod() {
-                    return "wahoo";
-                  }
-                }
+                class TestClass {}
 
-                var a = TestClass(); a.testMethod();""");
+                var a = TestClass();
+                a.someVar = 42;
+                a.someVar;""");
     }
 
     @SuppressWarnings("unused") // Used for debugging

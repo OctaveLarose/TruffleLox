@@ -4,7 +4,8 @@ import lox.nodes.calls.CallNode;
 import lox.nodes.calls.LookupNode;
 import lox.nodes.*; // Bad habit but useful in this context of generated classes. TODO to be changed later though
 import lox.nodes.arithmetic.*;
-import lox.nodes.classes.GetObjectPropertyNode;
+import lox.nodes.classes.ObjectPropertyNode;
+import lox.nodes.classes.ObjectPropertyNodeFactory;
 import lox.nodes.comparison.*;
 import lox.nodes.conditionals.*;
 import lox.nodes.functions.*;
@@ -337,6 +338,10 @@ public class LoxParser extends Parser {
                 return ArgumentNodeFactory.ArgumentWriteNodeGen.create(argIdx, assignment);
             }
 
+            if (assignee instanceof ObjectPropertyNode objectPropertyNode) {
+                return ObjectPropertyNodeFactory.ObjectPropertyWriteNodeGen.create(objectPropertyNode.getClassExpr(), objectPropertyNode.getPropertyName(), assignment);
+            }
+
             error("Invalid assignment target");
         }
         return assignee;
@@ -460,7 +465,7 @@ public class LoxParser extends Parser {
                 if (!match(TokenType.IDENTIFIER))
                     error("Expected an identifier after a \".\"");
 
-                primary = new GetObjectPropertyNode(primary, (String) previous().literal);
+                primary = ObjectPropertyNodeFactory.ObjectPropertyReadNodeGen.create(primary, (String) previous().literal);
             }
         }
 

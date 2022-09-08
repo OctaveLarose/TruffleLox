@@ -24,8 +24,6 @@ public class LoxClassInstance {
     }
 
     public void setAttribute(String attrName, Object value) {
-        if (this.getMethod(attrName) != null)
-            throw new RuntimeException("Trying to assign an attribute using the name of an existing method"); // TODO need to double check it's not actually allowed in Lox, most likely not
         this.attributes.put(attrName, value);
     }
 }
