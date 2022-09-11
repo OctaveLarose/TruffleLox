@@ -6,13 +6,13 @@ import lox.nodes.literals.TrueLiteralNode;
 import lox.objects.Nil;
 
 public class ForNode extends ExpressionNode {
-    private final ExpressionNode initialization;
-    private final ExpressionNode termination;
-    private final ExpressionNode increment;
-    private final ExpressionNode body;
+
+    @Child private ExpressionNode initialization;
+    @Child private ExpressionNode termination;
+    @Child private ExpressionNode increment;
+    @Child private ExpressionNode body;
 
     public ForNode(ExpressionNode initialization, ExpressionNode termination, ExpressionNode increment, ExpressionNode body) {
-        super();
         this.initialization = initialization;
         this.termination = termination != null ? termination: new TrueLiteralNode();
         this.increment = increment;

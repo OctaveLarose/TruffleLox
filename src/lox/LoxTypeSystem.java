@@ -13,6 +13,6 @@ public class LoxTypeSystem {
 
     @ImplicitCast
     public static boolean isNil(@SuppressWarnings("unused") Nil value) {
-        return false; // The only falsey value. TODO Which means every language element needs to be truthy
+        return false; // The only falsey value. Which means every language element needs to be truthy
     }
 }

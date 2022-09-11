@@ -2,6 +2,7 @@ package lox.nodes.variables;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.nodes.ExpressionNode;
 
@@ -29,8 +30,18 @@ public abstract class LocalVariableNode extends ExpressionNode {
             super(name, slotId);
         }
 
-        @Specialization
-        public Object read(VirtualFrame frame) {
+        @Specialization(guards = {"frame.isDouble(slotId)"}, rewriteOn = {FrameSlotTypeException.class})
+        public double readDouble(VirtualFrame frame) throws FrameSlotTypeException {
+            return frame.getDouble(slotId);
+        }
+
+        @Specialization(guards = {"frame.isBoolean(slotId)"}, rewriteOn = {FrameSlotTypeException.class})
+        public boolean readBool(VirtualFrame frame) throws FrameSlotTypeException {
+            return frame.getBoolean(slotId);
+        }
+
+        @Specialization(replaces = {"readDouble", "readBool"}, rewriteOn = {FrameSlotTypeException.class})
+        public Object readGeneric(VirtualFrame frame) throws FrameSlotTypeException {
             return frame.getObject(slotId);
         }
     }
@@ -42,7 +53,19 @@ public abstract class LocalVariableNode extends ExpressionNode {
         }
 
         @Specialization
-        public Object write(VirtualFrame frame, Object value) {
+        public double writeDouble(VirtualFrame frame, double value) {
+            frame.setDouble(slotId, value);
+            return value;
+        }
+
+        @Specialization
+        public boolean writeBool(VirtualFrame frame, boolean value) {
+            frame.setBoolean(slotId, value);
+            return value;
+        }
+
+        @Specialization(replaces = {"writeDouble", "writeBool"})
+        public Object writeGeneric(VirtualFrame frame, Object value) {
             frame.setObject(slotId, value);
             return value;
         }

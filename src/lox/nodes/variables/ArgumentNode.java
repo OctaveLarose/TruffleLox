@@ -5,7 +5,6 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.nodes.ExpressionNode;
 
-// TODO specialize this node
 public abstract class ArgumentNode extends ExpressionNode {
 
     protected int slotId;
@@ -22,12 +21,6 @@ public abstract class ArgumentNode extends ExpressionNode {
         public ArgumentReadNode(int argIdx) {
             super(argIdx);
         }
-
-//        @Specialization
-//        public boolean readBool(VirtualFrame frame) {
-//            var arguments = frame.getArguments();
-//            return (boolean) arguments[this.argIdx];
-//        }
 
         @Specialization
         public Object readGeneric(VirtualFrame frame) {

@@ -1,11 +1,9 @@
 package lox.parser;
 
-import lox.nodes.calls.CallNode;
-import lox.nodes.calls.LookupNode;
 import lox.nodes.*; // Bad habit but useful in this context of generated classes. TODO to be changed later though
+import lox.nodes.calls.*;
 import lox.nodes.arithmetic.*;
-import lox.nodes.classes.ObjectPropertyNode;
-import lox.nodes.classes.ObjectPropertyNodeFactory;
+import lox.nodes.classes.*;
 import lox.nodes.comparison.*;
 import lox.nodes.conditionals.*;
 import lox.nodes.functions.*;
@@ -183,7 +181,7 @@ public class LoxParser extends Parser {
         return new FunctionDeclarationNode((String)idToken.literal, functionContext.getFrameDescriptor(), block);
     }
 
-    private LocalVariableDecl varDecl() throws ParseError {
+    private LocalVariableNode.VariableWriteNode varDecl() throws ParseError {
         Token identifierToken = peek();
 
         if (!match(TokenType.IDENTIFIER))
@@ -196,7 +194,7 @@ public class LoxParser extends Parser {
             error("Already a variable with this name in the current scope");
 
         if (match(TokenType.SEMICOLON))
-            return new LocalVariableDecl(this.currentScope.setLocal(varName));
+            return LocalVariableNodeFactory.VariableWriteNodeGen.create(varName, this.currentScope.setLocal(varName), new NilLiteralNode());
 
         if (!match(TokenType.EQUALS))
             error("Expect an equals or semicolon after an identifier in a variable declaration");
@@ -206,7 +204,7 @@ public class LoxParser extends Parser {
         if (!match(TokenType.SEMICOLON))
             error("Unterminated variable declaration");
 
-        return new LocalVariableDecl(this.currentScope.setLocal(varName), assignedExpr);
+        return LocalVariableNodeFactory.VariableWriteNodeGen.create(varName, this.currentScope.setLocal(varName), assignedExpr);
     }
 
     private ExpressionNode statement() throws ParseError {
