@@ -1,6 +1,8 @@
 package lox.nodes.conditionals;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
+import lox.LoxTypeSystem;
+import lox.LoxTypeSystemGen;
 import lox.nodes.ExpressionNode;
 import lox.objects.Nil;
 
@@ -17,9 +19,8 @@ public class IfNode extends ExpressionNode {
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-        Object conditionValue = condition.executeGeneric(frame);
 
-        if ((conditionValue instanceof Boolean) && (boolean)conditionValue) // TODO: should be evaluated by the type system for truthy/falsey
+        if (LoxTypeSystemGen.asImplicitBoolean(condition.executeGeneric(frame)))
             return consequent.executeGeneric(frame);
 
         return Nil.INSTANCE;

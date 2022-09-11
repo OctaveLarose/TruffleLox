@@ -29,7 +29,7 @@ public class LoxLanguage extends TruffleLanguage<LoxContext> {
     @Override
     protected CallTarget parse(ParsingRequest request) throws Exception {
         try {
-            LoxRootNode rootNode = new LoxParser(request.getSource().getReader()).parse();
+            LoxRootNode rootNode = new LoxParser(request.getSource()).parse();
             return rootNode.getCallTarget();
         } catch (ParseError e) {
             ParseErrorPrinter.print(e, request.getSource());

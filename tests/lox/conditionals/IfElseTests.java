@@ -24,4 +24,10 @@ public class IfElseTests extends ExpressionTestsBase {
     public void ifElseElseEtc() {
         assertEquals(runDouble("var a = 42; if (a == 12) { a + 2; } else if (a == 13) { a = 13; } else { a = 0; }"), 0.0, 0.01);
     }
+
+    @Test
+    public void ifTruthyFalsey() {
+        assertEquals(runDouble("if (42222) { 42; }"), 42, 0.01);
+        assertEquals(runDouble("if (nil) { 42; } else { 24; }"), 24, 0.01);
+    }
 }

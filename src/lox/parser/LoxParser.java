@@ -1,6 +1,8 @@
 package lox.parser;
 
-import lox.nodes.*; // Bad habit but useful in this context of generated classes. TODO to be changed later though
+import com.oracle.truffle.api.source.Source;
+
+import lox.nodes.*; // Bad habit but useful in this context of generated classes. To be changed later though
 import lox.nodes.calls.*;
 import lox.nodes.arithmetic.*;
 import lox.nodes.classes.*;
@@ -13,55 +15,10 @@ import lox.nodes.statements.*;
 import lox.nodes.variables.*;
 import lox.parser.error.ParseError;
 
-import java.io.IOException;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
 import static lox.parser.Token.TokenType;
-
-/*
-    Grammar:
-
-    program ->      statement* EOF
-    declaration ->  classDecl
-                    | funDecl
-                    | varDecl
-                    | statement
-
-    classDecl ->    "class" IDENTIFIER ( "<" IDENTIFIER )? "{" function* "}" ;
-
-    funDecl ->      "fun" "{" parameters? "}" block
-    block ->        "{" declaration* "}"
-    parameters ->   IDENTIFIER ("," IDENTIFIER)*
-
-    statement ->    exprStmt
-                    | ifStmt
-                    | printStmt
-                    | returnStmt
-                    | whileStmt
-                    | block
-    ifStmt ->       "if" "(" expression ")" statement ( "else" statement )?
-    exprStmt ->     expr ";"
-    returnStmt ->   "return" expression? ";"
-    whileStmt ->    "while" "(" expression ")" statement
-
-    expr ->         assignment
-    assignment ->   IDENTIFIER "=" assignment
-                    | orExpr
-    orExpr ->       andExpr ( "or" andExpr )*
-    andExpr ->      equality ( "and" equality )*
-    equality ->     compare ( ( "!=" | "==" ) compare )*
-    compare ->      term ( ( ">" | ">=" | "<" | "<=" ) term )*
-    term ->         factor (( "-" | "+" ) factor)*
-    factor ->       unary (( "/" | "*" ) unary)*
-    unary ->        ("!" | "-") unary
-                    | call
-    call ->         primary ( "(" arguments? ")" | "." IDENTIFIER )*
-    primary ->      "true" | "false" | "nil"
-                    | NUMBER | STRING | IDENTIFIER
-                    | "(" expr ")"
- */
 
 public class LoxParser extends Parser {
     private final String ROOT_FUNCTION_NAME = "_main";
@@ -74,20 +31,9 @@ public class LoxParser extends Parser {
         this.sourceStr = inputStr;
     }
 
-    public LoxParser(Reader inputReader) {
-        String readerStr;
-        StringBuilder targetString = new StringBuilder();
-        int intValueOfChar;
-
-        try {
-            while ((intValueOfChar = inputReader.read()) != -1) // TODO remove this temporary ugly fix
-                targetString.append((char) intValueOfChar);
-            readerStr = targetString.toString();
-        } catch (IOException exception) {
-            System.err.println(exception.getMessage());
-            readerStr = "";
-        }
-        this.sourceStr = readerStr;
+    // Ideally we would fully leverage the Source object to get better debugging info, but this is good enough for a toy language
+    public LoxParser(Source source) {
+        this.sourceStr = (String) source.getCharacters();
     }
 
     public LoxRootNode parse() throws ParseError {
