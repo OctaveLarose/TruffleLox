@@ -10,15 +10,11 @@ public abstract class NotEqualsNode extends BinaryExprNode {
     public boolean doDouble(double left, double right) {
         return left != right;
     }
+
     @Specialization
     public boolean doBoolean(boolean left, boolean right) {
         return left != right;
     }
-    @Specialization
-    public boolean doLong(long left, long right) {
-        return left != right;
-    }
-
     @Specialization
     public boolean doString(String left, String right) {
         return !left.equals(right);

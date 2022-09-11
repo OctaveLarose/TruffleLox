@@ -8,7 +8,7 @@ import lox.nodes.UnaryExprNode;
 public abstract class NegateNode extends UnaryExprNode {
 
     @Specialization
-    public long doLong(long input) {
+    public int doInt(int input) {
         return -input;
     }
 

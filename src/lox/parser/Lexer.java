@@ -156,9 +156,11 @@ public class Lexer {
         if (peek() == '.' && isDigit(peekNext())) {
             advance();
             while (isDigit(peek())) advance();
+            addToken(TokenType.DOUBLE, Double.parseDouble(sourceStr.substring(this.symStartIdx, this.currentIdx)));
+            return;
         }
 
-        addToken(TokenType.NUMBER, Double.parseDouble(sourceStr.substring(this.symStartIdx, this.currentIdx)));
+        addToken(TokenType.INT, Integer.parseInt(sourceStr.substring(this.symStartIdx, this.currentIdx)));
     }
 
     private void string() throws ParseError {

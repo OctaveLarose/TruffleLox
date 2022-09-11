@@ -6,9 +6,8 @@ import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.nodes.ExpressionNode;
 
-// TODO specializations
 public abstract class LocalVariableNode extends ExpressionNode {
-    protected String name; // Not sure that's necessary frankly
+    protected String name;
 
     protected int slotId;
 

@@ -439,9 +439,12 @@ public class LoxParser extends Parser {
                 case BANG -> { return LogicalNotNodeFactory.create(unary()); }
                 case MINUS -> {
                     ExpressionNode unary = unary();
-                    if (unary instanceof NumberLiteralNode) {
-                        double value = ((NumberLiteralNode) unary).executeDouble(null);
-                        return new NumberLiteralNode(-value);
+                    if (unary instanceof DoubleLiteralNode) {
+                        double value = ((DoubleLiteralNode) unary).executeDouble(null);
+                        return new DoubleLiteralNode(-value);
+                    } else if  (unary instanceof IntLiteralNode) {
+                        int value = ((IntLiteralNode) unary).executeInt(null);
+                        return new IntLiteralNode(-value);
                     } else {
                         return NegateNodeFactory.create(unary);
                     }
@@ -478,7 +481,8 @@ public class LoxParser extends Parser {
             case TRUE -> { return new TrueLiteralNode(); }
             case FALSE -> { return new FalseLiteralNode(); }
             case NIL -> { return new NilLiteralNode(); }
-            case NUMBER -> { return new NumberLiteralNode((Double) currentToken.literal); }
+            case INT -> { return new IntLiteralNode((int) currentToken.literal); }
+            case DOUBLE -> { return new DoubleLiteralNode((Double) currentToken.literal); }
             case STRING -> { return new StringLiteralNode((String) currentToken.literal); }
             case PAREN_OPEN -> {
                 ExpressionNode expr = expression();

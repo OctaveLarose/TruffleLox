@@ -7,11 +7,11 @@ import lox.nodes.BinaryExprNode;
 @GenerateNodeFactory
 public abstract class AddNode extends BinaryExprNode {
     @Specialization(rewriteOn = ArithmeticException.class)
-    public long doLong(long left, long right) {
+    public int doInt(int left, int right) {
         return Math.addExact(left, right);
     }
 
-    @Specialization(replaces = "doLong")
+    @Specialization(replaces = "doInt")
     public double doDouble(double left, double right) {
         return left + right;
     }

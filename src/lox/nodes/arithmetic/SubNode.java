@@ -7,7 +7,7 @@ import lox.nodes.BinaryExprNode;
 @GenerateNodeFactory
 public abstract class SubNode extends BinaryExprNode {
     @Specialization
-    public long doLong(long left, long right) {
+    public int doInt(int left, int right) {
         return left - right;
     }
 

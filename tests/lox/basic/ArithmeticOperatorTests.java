@@ -1,6 +1,7 @@
 package lox.basic;
 
 import lox.ExpressionTestsBase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -11,6 +12,12 @@ public class ArithmeticOperatorTests extends ExpressionTestsBase {
     public void plus() {
         assertTrue(runBool("13 + 42 == 55;"));
         assertTrue(runBool("1 + 55 + 3812 == 3868;"));
+    }
+
+    @Ignore("Needs BigInteger support")
+    @Test
+    public void plusBig() {
+        assertTrue(runBool("130000000000 + 1 == 130000000001;"));
     }
 
     @Test

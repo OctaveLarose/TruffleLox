@@ -9,11 +9,11 @@ public class ArithmeticComparisonTests extends ExpressionTestsBase {
     @Test
     public void notEquals() {
         assertTrue(runBool("1 != 2;"));
-        assertTrue(runBool("163 * 5 + 100 / 4 - 12 * 2 + 145 != 10000000000;"));
+        assertTrue(runBool("163 * 5 + 100 / 4 - 12 * 2 + 145 != 1000000;"));
     }
 
     @Test
-    public void greater() {
+    public void lesser() {
         assertTrue(runBool("1 < 2;"));
         assertTrue(runBool("42 <= 43;"));
         assertTrue(runBool("43 <= 43;"));
@@ -21,7 +21,7 @@ public class ArithmeticComparisonTests extends ExpressionTestsBase {
     }
 
     @Test
-    public void lesser() {
+    public void greater() {
         assertTrue(runBool("1000 > 43;"));
         assertTrue(runBool("22 > 21;"));
         assertTrue(runBool("22 >= 21;"));

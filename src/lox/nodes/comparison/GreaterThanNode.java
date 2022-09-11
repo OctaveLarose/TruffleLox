@@ -8,7 +8,17 @@ import lox.nodes.BinaryExprNode;
 public abstract class GreaterThanNode extends BinaryExprNode {
 
     @Specialization
-    public boolean doLong(long left, long right) {
+    public boolean doInt(int left, int right) {
+        return left > right;
+    }
+
+    @Specialization
+    public boolean doDouble(double left, int right) {
+        return left > right;
+    }
+
+    @Specialization
+    public boolean doDouble(int left, double right) {
         return left > right;
     }
 
