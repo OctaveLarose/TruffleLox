@@ -2,7 +2,6 @@ package lox.objects;
 
 import java.util.HashMap;
 
-// TODO should be implemented into interop, probably?
 public class LoxClassInstance {
 
     private final LoxClassObject classObject;

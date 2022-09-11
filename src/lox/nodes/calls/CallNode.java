@@ -27,7 +27,7 @@ public class CallNode extends ExpressionNode {
 
         if (lookup instanceof FunctionRootNode function) {
             try {
-                return FunctionDispatchNodeGen.create().executeDispatch(new LoxFunction(function.getCallTarget()), evaluatedArgs);
+                return FunctionDispatchNodeGen.create().executeDispatch(new LoxFunction(function.getCallTarget(), function.getName()), evaluatedArgs);
             } catch (ReturnException returnException) {
                 return returnException.getResult();
             }

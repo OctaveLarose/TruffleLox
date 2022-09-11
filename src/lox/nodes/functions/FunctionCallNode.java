@@ -30,7 +30,7 @@ public class FunctionCallNode extends ExpressionNode {
         }
 
         try {
-            return this.dispatchNode.executeDispatch(new LoxFunction(function.getCallTarget()), evaluatedArgs);
+            return this.dispatchNode.executeDispatch(new LoxFunction(function.getCallTarget(), function.getName()), evaluatedArgs);
         } catch (ReturnException returnException) {
             return returnException.getResult();
         }
