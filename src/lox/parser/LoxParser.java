@@ -25,9 +25,9 @@ public class LoxParser extends Parser {
     private final String ROOT_FUNCTION_NAME = "_main";
     private final String sourceStr;
 
-    private String currentClassName; // The only info needed for now, therefore a ClassContext feels unnecessary
+    private ClassContext currentClassContext;
 
-    private FunctionContext currentScope;
+    private FunctionContext currentFunContext;
 
     @SuppressWarnings("unused") // Used for debugging
     public LoxParser(String inputStr) {
@@ -43,11 +43,11 @@ public class LoxParser extends Parser {
         Lexer lexer = new Lexer(this.sourceStr);
         this.tokens = lexer.getTokens();
 
-        this.currentScope = new FunctionContext(ROOT_FUNCTION_NAME);
+        this.currentFunContext = new FunctionContext(ROOT_FUNCTION_NAME);
 
         ExpressionNode program = program();
 
-        return new LoxRootNode(program, this.currentScope.getFrameDescriptor());
+        return new LoxRootNode(program, this.currentFunContext.getFrameDescriptor());
     }
 
     private ExpressionNode program() throws ParseError {
@@ -91,17 +91,17 @@ public class LoxParser extends Parser {
             error("Expect a { to define the class body");
 
 
-        String previousClassName = this.currentClassName;
-        this.currentClassName = className;
+        ClassContext prevClassContext = this.currentClassContext;
+        this.currentClassContext = new ClassContext(className, (superclass != null));
         List<FunctionDeclarationNode> methods = new ArrayList<>();
         while (!isAtEnd() && !match(TokenType.CURLY_BRACKET_CLOSE)) {
             FunctionDeclarationNode funDecl = funDecl();
             funDecl.setIsMethod(true);
             methods.add(funDecl);
         }
-        this.currentClassName = previousClassName;
+        this.currentClassContext = prevClassContext;
 
-        if (isAtEnd())
+        if (isAtEnd() && previous().type != TokenType.CURLY_BRACKET_CLOSE)
             error("Unterminated class body");
 
         return new ClassDeclarationNode(className, superclass, methods);
@@ -121,14 +121,14 @@ public class LoxParser extends Parser {
         if (!match(TokenType.CURLY_BRACKET_OPEN))
             error("Expected a '{' to specify a function declaration");
 
-        FunctionContext functionContext = new FunctionContext((String)idToken.literal, this.currentClassName);
+        FunctionContext functionContext = new FunctionContext((String)idToken.literal);
         functionContext.setParameters(parameters);
 
-        FunctionContext outerContext = this.currentScope;
+        FunctionContext outerContext = this.currentFunContext;
 
-        this.currentScope = functionContext;
+        this.currentFunContext = functionContext;
         ExpressionNode block = block();
-        this.currentScope = outerContext;
+        this.currentFunContext = outerContext;
 
         return new FunctionDeclarationNode((String)idToken.literal, functionContext.getFrameDescriptor(), block);
     }
@@ -142,11 +142,11 @@ public class LoxParser extends Parser {
         String varName = (String) identifierToken.literal;
 
         // Not a fan, I'd rather have this be handled in setLocal() but it's another class that doesn't have access to error()
-        if (this.currentScope.isVarDefined(varName))
+        if (this.currentFunContext.isVarDefined(varName))
             error("Already a variable with this name in the current scope");
 
         if (match(TokenType.SEMICOLON))
-            return LocalVariableNodeFactory.VariableWriteNodeGen.create(varName, this.currentScope.setLocal(varName), new NilLiteralNode());
+            return LocalVariableNodeFactory.VariableWriteNodeGen.create(varName, this.currentFunContext.setLocal(varName), new NilLiteralNode());
 
         if (!match(TokenType.EQUALS))
             error("Expect an equals or semicolon after an identifier in a variable declaration");
@@ -156,7 +156,7 @@ public class LoxParser extends Parser {
         if (!match(TokenType.SEMICOLON))
             error("Unterminated variable declaration");
 
-        return LocalVariableNodeFactory.VariableWriteNodeGen.create(varName, this.currentScope.setLocal(varName), assignedExpr);
+        return LocalVariableNodeFactory.VariableWriteNodeGen.create(varName, this.currentFunContext.setLocal(varName), assignedExpr);
     }
 
     private ExpressionNode statement() throws ParseError {
@@ -254,6 +254,9 @@ public class LoxParser extends Parser {
             var declaration = declaration();
             declarations.add(declaration);
         }
+
+        if (isAtEnd() && previous().type != TokenType.CURLY_BRACKET_CLOSE)
+            error("Unterminated block statement");
 
         return new BlockNode(declarations);
     }
@@ -445,8 +448,8 @@ public class LoxParser extends Parser {
             case IDENTIFIER -> {
                 String identifierName = (String) currentToken.literal;
 
-                if (!this.currentScope.getName().equals(ROOT_FUNCTION_NAME)) { // i.e. whether we are currently parsing a function
-                    Integer argSlotId = this.currentScope.getParam(identifierName);
+                if (!this.currentFunContext.getName().equals(ROOT_FUNCTION_NAME)) { // i.e. whether we are currently parsing a function
+                    Integer argSlotId = this.currentFunContext.getParam(identifierName);
                     if (argSlotId != null)
                         return ArgumentNodeFactory.ArgumentReadNodeGen.create(argSlotId);
                 }
@@ -464,7 +467,13 @@ public class LoxParser extends Parser {
                 if (!match(TokenType.IDENTIFIER))
                     error("Expect an identifier after super");
 
-                return new SuperExprNode(this.currentScope.getClassName(), (String) token.literal);
+                if (this.currentClassContext == null)
+                    error("super cannot be used outside of a class");
+
+                if (!this.currentClassContext.hasSuperClass())
+                    error("super cannot be used in a class which has no superclass");
+
+                return new SuperExprNode(this.currentClassContext.getName(), (String) token.literal);
             }
             default -> error("Invalid expression: primary token of type " + currentToken.type);
         }
@@ -473,8 +482,8 @@ public class LoxParser extends Parser {
     }
 
     private ExpressionNode resolveIdentifier(String identifierName) {
-        if (this.currentScope.getLocal(identifierName) != null)
-            return LocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, this.currentScope.getLocal(identifierName));
+        if (this.currentFunContext.getLocal(identifierName) != null)
+            return LocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, this.currentFunContext.getLocal(identifierName));
 
         return new IdentifierNode(identifierName);
     }

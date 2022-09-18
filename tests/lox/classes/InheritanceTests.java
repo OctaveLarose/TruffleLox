@@ -47,9 +47,19 @@ public class InheritanceTests extends ExpressionTestsBase {
 
     @Ignore(ExpressionTestsBase.IMPLEMENTED_BUT_NO_EXCEPT_HANDLING)
     @Test
-    public void invalidSuperAccess() {
+    public void invalidSuperAccesses() {
         String superAccessStr = "print super;";
+        String superAccessStr2 = """
+                class No {
+                    method() {
+                        super.method();
+                        print "do something";
+                    }
+                }
+                """;
 
+        // what matters is that these are caught during parsing, not execution!
         assertEquals("thiswillthrow", runWithOutput(superAccessStr));
+        assertEquals("thiswillthrow", runWithOutput(superAccessStr2));
     }
 }

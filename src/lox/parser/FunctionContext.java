@@ -9,7 +9,6 @@ import java.util.List;
 public class FunctionContext {
     private final String name;
 
-    private final String className;
     private final HashMap<String, Integer> paramsIdMap;
 
     private final HashMap<String, Integer> localsIdMap;
@@ -19,23 +18,14 @@ public class FunctionContext {
     private int localVarIdx = 0;
 
     public FunctionContext(String funName) {
-        this(funName, null);
-    }
-
-    public FunctionContext(String funName, String className) {
         this.name = funName;
         this.paramsIdMap = new HashMap<>();
         this.localsIdMap = new HashMap<>();
         this.frameDescriptorBuilder = FrameDescriptor.newBuilder();
-        this.className = className;
     }
 
     public String getName() {
         return this.name;
-    }
-
-    public String getClassName() {
-        return this.className;
     }
 
     public Integer getParam(String name) {
