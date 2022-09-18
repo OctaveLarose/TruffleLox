@@ -12,7 +12,7 @@ public class ClassTests extends ExpressionTestsBase {
                 "testMethod() { return \"wahoo\"; }}" +
                 "TestClass;";
 
-        assertEquals(runString(printClass), "TestClass");
+        assertEquals("TestClass", runString(printClass));
     }
 
     @Test
@@ -31,8 +31,8 @@ public class ClassTests extends ExpressionTestsBase {
                 }
                 var a = AAAAAAAAAAAAA(); a.someRandomMethodName() + a.anotherMethod();""";
 
-        assertEquals(runString(basicMethodCall1), "All good");
-        assertEquals(runDouble(basicMethodCall2), 42 * 4 - 121, 0.01);
+        assertEquals("All good", runString(basicMethodCall1));
+        assertEquals(42 * 4 - 121, runInt(basicMethodCall2));
     }
 
     @Test
@@ -43,7 +43,7 @@ public class ClassTests extends ExpressionTestsBase {
                 a.someVar = 42;
                 a.someVar;""";
 
-        assertEquals(runDouble(fieldAccess1), 42, 0.01);
+        assertEquals(42, runInt(fieldAccess1));
 
         String fieldAccess2 = """
                 class NameNotImportant {}
@@ -52,7 +52,7 @@ public class ClassTests extends ExpressionTestsBase {
                 np.abcdef = np.abcdef * 1000;
                """;
 
-        assertEquals(runDouble(fieldAccess2), -1000, 0.01);
+        assertEquals(-1000, runInt(fieldAccess2));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class ClassTests extends ExpressionTestsBase {
                 a.sneakyReferenceToPopularMedia = "a better reference actually and not even a method";
                 a.sneakyReferenceToPopularMedia;""";
 
-        assertEquals(runString(replaceMethod), "a better reference actually");
-        assertEquals(runString(replaceNonMethod), "a better reference actually and not even a method");
+        assertEquals("a better reference actually", runString(replaceMethod));
+        assertEquals("a better reference actually and not even a method", runString(replaceNonMethod));
     }
 }

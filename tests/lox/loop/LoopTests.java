@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 public class LoopTests extends ExpressionTestsBase {
     @Test
     public void whileTests() {
-        assertEquals(runDouble("var a = 0; while (a < 10) { a = a + 1; } a;"), 10.0, 0.01);
-        assertEquals(runDouble("var a = 0; while (false) { a = a + 1; } a;"), 0, 0.01);
+        assertEquals(10, runInt("var a = 0; while (a < 10) { a = a + 1; } a;"));
+        assertEquals(0, runInt("var a = 0; while (false) { a = a + 1; } a;"));
     }
 }

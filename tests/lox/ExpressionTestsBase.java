@@ -8,11 +8,15 @@ import java.io.PrintStream;
 
 @Ignore
 public abstract class ExpressionTestsBase {
-    public static final String IMPLEMENTED_BUT_NO_EXEC = "IMPLEMENTED but needs a test handler that catches exceptions, TODO";
+    public static final String IMPLEMENTED_BUT_NO_EXCEPT_HANDLING = "IMPLEMENTED but needs a test handler that catches exceptions, TODO";
     private static final Context context = Context.create();
 
     protected boolean runBool(String sourceStr) {
         return context.eval("tlox", sourceStr).asBoolean();
+    }
+
+    protected int runInt(String sourceStr) {
+        return context.eval("tlox", sourceStr).asInt();
     }
 
     protected double runDouble(String sourceStr) {

@@ -20,7 +20,7 @@ public class InheritanceTests extends ExpressionTestsBase {
                 Chai().souperMethod();
                 """;
 
-        assertEquals(runString(inheritStr), "superclass method");
+        assertEquals("superclass method", runString(inheritStr));
     }
 
     @Test
@@ -45,11 +45,11 @@ public class InheritanceTests extends ExpressionTestsBase {
         assertEquals("soup\nchai\n", runWithOutput(superStr));
     }
 
-    @Ignore(ExpressionTestsBase.IMPLEMENTED_BUT_NO_EXEC)
+    @Ignore(ExpressionTestsBase.IMPLEMENTED_BUT_NO_EXCEPT_HANDLING)
     @Test
     public void invalidSuperAccess() {
         String superAccessStr = "print super;";
 
-        assertEquals(runWithOutput(superAccessStr), "thiswillthrow");
+        assertEquals("thiswillthrow", runWithOutput(superAccessStr));
     }
 }

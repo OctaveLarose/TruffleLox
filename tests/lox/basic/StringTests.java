@@ -1,7 +1,7 @@
 package lox.basic;
 
 import lox.ExpressionTestsBase;
-import org.graalvm.polyglot.PolyglotException;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -13,8 +13,9 @@ public class StringTests extends ExpressionTestsBase {
         assertTrue(runBool("\"AbcD\" != \"abCd\";"));
     }
 
-//    @Test
-//    public void invalid() {
-//        assertThrows(PolyglotException.class, () -> {runBool("\"hello world\" >= \"hello world\";");});
-//    }
+    @Ignore(IMPLEMENTED_BUT_NO_EXCEPT_HANDLING)
+    @Test
+    public void invalidStringComparison() {
+        assertTrue(runBool("\"hello world\" >= \"hello world\";")); // throws
+    }
 }
