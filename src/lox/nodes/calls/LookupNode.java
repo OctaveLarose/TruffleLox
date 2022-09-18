@@ -34,7 +34,7 @@ public class LookupNode extends ExpressionNode {
             return lookup;
 
 
-        throw new RuntimeException("Couldn't look up the caller " + callerString + " (neither a known function nor class");
+        throw new RuntimeException("Couldn't look up the caller " + callerString + " (neither a known function nor class)");
     }
 
     private FunctionRootNode lookupFunction(String callerString, LoxContext context) {

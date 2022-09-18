@@ -34,7 +34,6 @@ public class FunctionTests extends ExpressionTestsBase {
         assertEquals(runDouble("fun func(a, b, c) { c = 1; c = b = 2; a = b = c; return a + b + c; } func(1, 1, 1);"), 6, 0.001);
     }
 
-    @Ignore("Should be implemented, shows a bug. TODO!")
     @Test
     public void noSharedState() {
         assertEquals(runDouble("fun addA(input) { var a = 24; return a + input; } var a = 42; addA(a);"), 66.0, 0.001);
@@ -47,7 +46,7 @@ public class FunctionTests extends ExpressionTestsBase {
         assertEquals(runDouble("fun addA(input) { var input = 34; return input; } var a = 42; add(a);"), 66.0, 0.001);
     }
 
-    @Ignore("IMPLEMENTED but needs a test handler that catches exceptions, TODO")
+    @Ignore(IMPLEMENTED_BUT_NO_EXEC)
     @Test
     public void noCallByString() {
         // should throw!
