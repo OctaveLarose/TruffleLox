@@ -15,7 +15,7 @@ public class GodClass {
     }
 
     @SuppressWarnings("unused") // Used for debugging
-    static public void evalString(String inputStr) {
+    static public void eval(String inputStr) {
         var val = getContext().eval("tlox", inputStr);
         System.out.println(val);
     }

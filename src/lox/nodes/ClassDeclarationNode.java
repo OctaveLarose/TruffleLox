@@ -13,6 +13,7 @@ import java.util.Map;
 public class ClassDeclarationNode extends ExpressionNode {
     private final String name;
     private final String superclassName;
+
     private final List<FunctionDeclarationNode> methods;
 
     public ClassDeclarationNode(String className, String extendsClass, List<FunctionDeclarationNode> methods) {
@@ -30,7 +31,8 @@ public class ClassDeclarationNode extends ExpressionNode {
         for (FunctionDeclarationNode funDecl: this.methods)
             methodsMap.put(funDecl.getName(), (FunctionRootNode) funDecl.executeGeneric(frame));
 
-        loxContext.globalScope.setClass(this.name, new LoxClassObject(name, superclassName, methodsMap));
+        LoxClassObject superclass = loxContext.globalScope.getClass(superclassName);
+        loxContext.globalScope.setClass(this.name, new LoxClassObject(name, superclass, methodsMap));
         return null;
     }
 }

@@ -20,6 +20,7 @@ import java.util.List;
 
 import static lox.parser.Token.TokenType;
 
+// Recursive descent AST parser
 public class LoxParser extends Parser {
     private final String ROOT_FUNCTION_NAME = "_main";
     private final String sourceStr;
@@ -76,12 +77,12 @@ public class LoxParser extends Parser {
 
         String className = (String) identifierToken.literal;
 
-        String extendsClass = null;
+        String superclass = null;
         if (match(TokenType.LESSER_THAN)) {
             Token superClassToken = peek();
             if (!match(TokenType.IDENTIFIER))
                 error("Expect identifier after superclass declaration");
-            extendsClass = (String) superClassToken.literal;
+            superclass = (String) superClassToken.literal;
         }
 
         if (!match(TokenType.CURLY_BRACKET_OPEN))
@@ -98,7 +99,7 @@ public class LoxParser extends Parser {
         if (isAtEnd())
             error("Unterminated class body");
 
-        return new ClassDeclarationNode(className, extendsClass, methods);
+        return new ClassDeclarationNode(className, superclass, methods);
     }
 
     private FunctionDeclarationNode funDecl() throws ParseError {
