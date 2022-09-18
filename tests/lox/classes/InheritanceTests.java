@@ -62,4 +62,30 @@ public class InheritanceTests extends ExpressionTestsBase {
         assertEquals("thiswillthrow", runWithOutput(superAccessStr));
         assertEquals("thiswillthrow", runWithOutput(superAccessStr2));
     }
+
+    @Test
+    public void nestedSuper() {
+        String testStr = """
+                class A {
+                  method() {
+                    print "A method";
+                  }
+                }
+
+                class B < A {
+                  method() {
+                    print "B method";
+                  }
+
+                  test() {
+                    super.method();
+                  }
+                }
+
+                class C < B {}
+                C().test();
+                """;
+
+        assertEquals("A method\n", runWithOutput(testStr));
+    }
 }
