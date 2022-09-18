@@ -1,6 +1,7 @@
 package lox.classes;
 
 import lox.ExpressionTestsBase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -20,5 +21,35 @@ public class InheritanceTests extends ExpressionTestsBase {
                 """;
 
         assertEquals(runString(inheritStr), "superclass method");
+    }
+
+    @Test
+    public void superCalls() {
+        String superStr = """
+                class Soup {
+                  method() {
+                    print "soup";
+                  }
+                }
+                 
+                 class Chai < Soup {
+                   method() {
+                     super.method();
+                     print "chai";
+                   }
+                 }
+                 
+                 Chai().method();
+                """;
+
+        assertEquals("soup\nchai\n", runWithOutput(superStr));
+    }
+
+    @Ignore(ExpressionTestsBase.IMPLEMENTED_BUT_NO_EXEC)
+    @Test
+    public void invalidSuperAccess() {
+        String superAccessStr = "print super;";
+
+        assertEquals(runWithOutput(superAccessStr), "thiswillthrow");
     }
 }

@@ -25,6 +25,8 @@ public class LoxParser extends Parser {
     private final String ROOT_FUNCTION_NAME = "_main";
     private final String sourceStr;
 
+    private String currentClassName; // The only info needed for now, therefore a ClassContext feels unnecessary
+
     private FunctionContext currentScope;
 
     @SuppressWarnings("unused") // Used for debugging
@@ -89,12 +91,15 @@ public class LoxParser extends Parser {
             error("Expect a { to define the class body");
 
 
+        String previousClassName = this.currentClassName;
+        this.currentClassName = className;
         List<FunctionDeclarationNode> methods = new ArrayList<>();
         while (!isAtEnd() && !match(TokenType.CURLY_BRACKET_CLOSE)) {
             FunctionDeclarationNode funDecl = funDecl();
             funDecl.setIsMethod(true);
             methods.add(funDecl);
         }
+        this.currentClassName = previousClassName;
 
         if (isAtEnd())
             error("Unterminated class body");
@@ -116,7 +121,7 @@ public class LoxParser extends Parser {
         if (!match(TokenType.CURLY_BRACKET_OPEN))
             error("Expected a '{' to specify a function declaration");
 
-        FunctionContext functionContext = new FunctionContext((String)idToken.literal);
+        FunctionContext functionContext = new FunctionContext((String)idToken.literal, this.currentClassName);
         functionContext.setParameters(parameters);
 
         FunctionContext outerContext = this.currentScope;
@@ -450,6 +455,16 @@ public class LoxParser extends Parser {
                     return new FunctionNameLiteralNode((String) currentToken.literal);
                 else
                     return resolveIdentifier(identifierName);
+            }
+            case SUPER -> {
+                if (!match(TokenType.DOT))
+                    error("Expect a dot after super");
+
+                Token token = peek();
+                if (!match(TokenType.IDENTIFIER))
+                    error("Expect an identifier after super");
+
+                return new SuperExprNode(this.currentScope.getClassName(), (String) token.literal);
             }
             default -> error("Invalid expression: primary token of type " + currentToken.type);
         }

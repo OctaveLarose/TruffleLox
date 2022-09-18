@@ -24,6 +24,10 @@ public class LoxClassObject {
         return method != null ? method : this.superclass.getMethod(name);
     }
 
+    public FunctionRootNode getSuperMethod(String name) {
+        return this.superclass != null ? this.superclass.getMethod(name) : null;
+    }
+
     @Override
     public String toString() {
         return name;

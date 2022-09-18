@@ -8,6 +8,7 @@ import java.io.PrintStream;
 
 @Ignore
 public abstract class ExpressionTestsBase {
+    public static final String IMPLEMENTED_BUT_NO_EXEC = "IMPLEMENTED but needs a test handler that catches exceptions, TODO";
     private static final Context context = Context.create();
 
     protected boolean runBool(String sourceStr) {
