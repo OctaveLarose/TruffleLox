@@ -2,6 +2,7 @@ package lox.parser;
 
 import com.oracle.truffle.api.source.Source;
 
+import lox.LoxConstants;
 import lox.nodes.*; // Bad habit but useful in this context of generated classes. To be changed later though
 import lox.nodes.calls.*;
 import lox.nodes.arithmetic.*;
@@ -85,6 +86,8 @@ public class LoxParser extends Parser {
             if (!match(TokenType.IDENTIFIER))
                 error("Expect identifier after superclass declaration");
             superclass = (String) superClassToken.literal;
+            if (superclass.equals(className))
+                error("A class can't inherit from itself", superClassToken);
         }
 
         if (!match(TokenType.CURLY_BRACKET_OPEN))
@@ -461,11 +464,11 @@ public class LoxParser extends Parser {
             }
             case SUPER -> {
                 if (!match(TokenType.DOT))
-                    error("Expect a dot after super");
+                    error("Expect '.' after 'super'");
 
                 Token token = peek();
                 if (!match(TokenType.IDENTIFIER))
-                    error("Expect an identifier after super");
+                    error("Expect superclass method name");
 
                 if (this.currentClassContext == null)
                     error("super cannot be used outside of a class");
@@ -475,7 +478,7 @@ public class LoxParser extends Parser {
 
                 return new SuperExprNode(this.currentClassContext.getName(), (String) token.literal);
             }
-            default -> error("Invalid expression: primary token of type " + currentToken.type);
+            default -> error("Expect expression", currentToken);
         }
 
         return null; // Unreachable
@@ -496,6 +499,8 @@ public class LoxParser extends Parser {
         while (!isAtEnd()) {
             ExpressionNode expr = expression();
             arguments.add(expr);
+            if (arguments.size() > LoxConstants.MAX_ARG_SIZE)
+                error("Can't have more than 255 arguments", previous());
             if (!match(TokenType.COMMA))
                 break;
         }

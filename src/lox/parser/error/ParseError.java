@@ -12,10 +12,6 @@ public class ParseError extends Exception {
 
     @Override
     public String getMessage() {
-        return super.getMessage();
-    }
-
-    public Token getFailingToken() {
-        return this.failingToken;
+        return "[line " + failingToken.lineIdx + "] Error at '" + failingToken.lexeme +"': " + super.getMessage() + ".";
     }
 }

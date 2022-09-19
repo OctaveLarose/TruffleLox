@@ -41,6 +41,7 @@ public class Lexer {
     Lexer(String sourceInput) {
         this.sourceStr = sourceInput;
         this.tokens = new ArrayList<>();
+        this.currentLine = 1;
     }
 
     private char peek() {

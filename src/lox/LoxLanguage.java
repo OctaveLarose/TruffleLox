@@ -5,7 +5,6 @@ import com.oracle.truffle.api.CompilerDirectives.CompilationFinal;
 import com.oracle.truffle.api.TruffleLanguage;
 import lox.nodes.LoxRootNode;
 import lox.parser.error.ParseError;
-import lox.parser.error.ParseErrorPrinter;
 import lox.parser.LoxParser;
 
 @TruffleLanguage.Registration(id = "tlox", name = "TruffleLox")
@@ -27,13 +26,8 @@ public class LoxLanguage extends TruffleLanguage<LoxContext> {
     }
 
     @Override
-    protected CallTarget parse(ParsingRequest request) throws Exception {
-        try {
-            LoxRootNode rootNode = new LoxParser(request.getSource()).parse();
-            return rootNode.getCallTarget();
-        } catch (ParseError e) {
-            ParseErrorPrinter.print(e, request.getSource());
-            throw e;
-        }
+    protected CallTarget parse(ParsingRequest request) throws ParseError {
+        LoxRootNode rootNode = new LoxParser(request.getSource()).parse();
+        return rootNode.getCallTarget();
     }
 }

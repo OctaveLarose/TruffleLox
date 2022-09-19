@@ -1,6 +1,7 @@
 package lox;
 
 import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.PolyglotException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,22 +20,40 @@ public class GodClass {
 
     static public void runFile(String filePath) {
         try {
-            getContext().eval("tlox", Files.readString(Paths.get(filePath)));
+            eval(Files.readString(Paths.get(filePath)));
         } catch (IOException e) {
-            System.err.println("IOException: " + e.getMessage());
+            System.err.println("Couldn't read file: " + e.getMessage());
+            System.exit(1);
         }
     }
 
-    @SuppressWarnings("unused") // Used for debugging
     static public void runREPL() {
         LoxREPL.runLoop();
     }
 
-    @SuppressWarnings("unused") // Used for debugging
     static public void eval(String inputStr) {
+        try {
+            getContext().eval("tlox", inputStr);
+            System.exit(0);
+        } catch (PolyglotException e) {
+            // ParseError exception contains a message of the form "java.lang.RuntimeException: lox.parser.error.ParseError: ACTUAL_MESSAGE", so this is a dirty fix
+            if (e.getMessage().contains("[line ")) { // i.e. is a parse exception
+                String actualErrorMessage = e.getMessage().substring(e.getMessage().indexOf("[line "));
+                System.err.println(actualErrorMessage);
+                System.exit(65);
+            } else { // Runtime exception
+                System.err.println(e.getMessage()); // TODO handle
+                System.exit(70);
+            }
+        }
+    }
+
+    @SuppressWarnings("unused") // Used for debugging
+    static public void evalPrint(String inputStr) {
         var val = getContext().eval("tlox", inputStr);
         System.out.println(val);
     }
+
 
     static public Context getContext() {
         Context.Builder contextBuilder = Context.newBuilder(LoxLanguage.LANG_ID)

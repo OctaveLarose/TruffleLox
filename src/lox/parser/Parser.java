@@ -43,4 +43,8 @@ public abstract class Parser {
     protected void error(String errorMsg) throws ParseError {
         throw new ParseError(errorMsg, this.tokens.get(this.currentIdx));
     }
+
+    protected void error(String errorMsg, Token failingToken) throws ParseError {
+        throw new ParseError(errorMsg, failingToken);
+    }
 }
