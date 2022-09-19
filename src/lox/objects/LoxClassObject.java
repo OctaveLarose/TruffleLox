@@ -1,10 +1,11 @@
 package lox.objects;
 
+import com.oracle.truffle.api.interop.TruffleObject;
 import lox.nodes.functions.FunctionRootNode;
 
 import java.util.Map;
 
-public class LoxClassObject {
+public class LoxClassObject implements TruffleObject {
     private final String name;
     private final LoxClassObject superclass;
     private final Map<String, FunctionRootNode> methods;

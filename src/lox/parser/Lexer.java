@@ -90,7 +90,6 @@ public class Lexer {
             switch (c) {
                 case '+' -> addToken(TokenType.PLUS);
                 case '*' -> addToken(TokenType.STAR);
-                case '/' -> addToken(TokenType.SLASH);
                 case '(' -> addToken(TokenType.PAREN_OPEN);
                 case ')' -> addToken(TokenType.PAREN_CLOSE);
                 case '{' -> addToken(TokenType.CURLY_BRACKET_OPEN);
@@ -99,6 +98,14 @@ public class Lexer {
                 case ';' -> addToken(TokenType.SEMICOLON);
                 case ',' -> addToken(TokenType.COMMA);
                 case '.' -> addToken(TokenType.DOT);
+                case '/' -> {
+                    if (this.peek() == '/') {
+                        while (peek() != '\n' && !isAtEnd())
+                            advance();
+                    } else {
+                        addToken(TokenType.SLASH);
+                    }
+                }
                 case '=' -> {
                     if (this.peek() == '=') {
                         addToken(TokenType.DOUBLE_EQUALS);

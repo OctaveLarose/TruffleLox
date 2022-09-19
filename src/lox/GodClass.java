@@ -2,11 +2,27 @@ package lox;
 
 import org.graalvm.polyglot.Context;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 // Named after the antipattern! Now it just needs to not eventually become the antipattern!
 public class GodClass {
 
     static public void main(String[] args) {
-        runREPL();
+        if (args.length != 0) {
+            runFile(args[0]);
+        } else {
+            runREPL();
+        }
+    }
+
+    static public void runFile(String filePath) {
+        try {
+            getContext().eval("tlox", Files.readString(Paths.get(filePath)));
+        } catch (IOException e) {
+            System.err.println("IOException: " + e.getMessage());
+        }
     }
 
     @SuppressWarnings("unused") // Used for debugging

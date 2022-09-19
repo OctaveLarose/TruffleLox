@@ -1,4 +1,4 @@
-<project name="trufflelox" basedir="." default="compile">
+<project name="trufflelox" basedir="." default="compile" xmlns:if="ant:if">
 
     <property name="src.dir"     location="src"/>
     <property name="lib.dir"     location="libs" />
@@ -35,6 +35,8 @@
             <jvmarg line="-Dtruffle.class.path.append=${classes.dir}"/>
 
             <jvmarg line="${add-opens-truffle}"/>
+
+            <arg if:set="inputfile" value="${inputfile}"/>
         </java>
     </target>
 

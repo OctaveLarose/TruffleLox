@@ -32,7 +32,8 @@ public class ClassDeclarationNode extends ExpressionNode {
             methodsMap.put(funDecl.getName(), (FunctionRootNode) funDecl.executeGeneric(frame));
 
         LoxClassObject superclass = loxContext.globalScope.getClass(superclassName);
-        loxContext.globalScope.setClass(this.name, new LoxClassObject(name, superclass, methodsMap));
-        return null;
+        LoxClassObject newClass = new LoxClassObject(name, superclass, methodsMap);
+        loxContext.globalScope.setClass(this.name, newClass);
+        return newClass;
     }
 }
