@@ -2,6 +2,7 @@ package lox.nodes;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.impl.FrameWithoutBoxing;
 
 public class BlockRootNode extends LoxRootNode {
     //@Child
@@ -18,6 +19,6 @@ public class BlockRootNode extends LoxRootNode {
 
     @Override
     public Object execute(VirtualFrame frame) {
-        return this.expressions.executeGeneric(frame);
+        return this.expressions.executeGeneric(new FrameWithoutBoxing(this.getFrameDescriptor(), new Object[]{}));
     }
 }
