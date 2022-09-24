@@ -178,10 +178,8 @@ public class LoxParser extends Parser {
         else if (match(TokenType.WHILE))
             return whileStmt();
         else if (match(TokenType.CURLY_BRACKET_OPEN)) {
-            FunctionContext functionContext = new FunctionContext("_block"); // TODO can the fact all blocks are named that cause issues?
             FunctionContext outerContext = this.currentFunContext;
-
-            this.currentFunContext = functionContext;
+            this.currentFunContext = new FunctionContext("_block", outerContext); // can the fact all blocks are named that ever cause issues?
             BlockNode block = block();
             this.currentFunContext = outerContext;
             return block;
@@ -297,6 +295,13 @@ public class LoxParser extends Parser {
                 String varName = (((LocalVariableNode)assignee).getName());
                 int slotId = ((LocalVariableNode)assignee).getSlotId();
                 return LocalVariableNodeFactory.VariableWriteNodeGen.create(varName, slotId, assignment);
+            }
+
+            if (assignee instanceof NonLocalVariableNode) {
+                String varName = (((NonLocalVariableNode)assignee).getName());
+                int slotId = ((NonLocalVariableNode)assignee).getSlotId();
+                int scopeLevel = ((NonLocalVariableNode)assignee).getScopeLevel();
+                return NonLocalVariableNodeFactory.VariableWriteNodeGen.create(varName, slotId, scopeLevel, assignment);
             }
 
             if (assignee instanceof ArgumentNode) {
@@ -497,6 +502,11 @@ public class LoxParser extends Parser {
     private ExpressionNode resolveIdentifier(String identifierName) {
         if (this.currentFunContext.getLocal(identifierName) != null)
             return LocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, this.currentFunContext.getLocal(identifierName));
+
+        var nonLocalVar = this.currentFunContext.getNonLocal(identifierName);
+        System.out.println(nonLocalVar);
+        if (nonLocalVar != null)
+            return NonLocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, nonLocalVar.getLeft(), nonLocalVar.getRight());
 
         return new IdentifierNode(identifierName);
     }

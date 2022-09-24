@@ -11,11 +11,21 @@ import java.nio.file.Paths;
 public class GodClass {
 
     static public void main(String[] args) {
-        if (args.length != 0) {
-            runFile(args[0]);
-        } else {
-            runREPL();
-        }
+        eval("""
+                var a = "outer";
+                                
+                {
+                  var b = "inner";
+                  print b; // expect: inner
+                }
+                                
+                print a; // expect: outer
+                """);
+//        if (args.length != 0) {
+//            runFile(args[0]);
+//        } else {
+//            runREPL();
+//        }
     }
 
     static public void runFile(String filePath) {

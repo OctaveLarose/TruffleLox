@@ -2,6 +2,7 @@ package lox.parser;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
+import org.graalvm.collections.Pair;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,13 +16,20 @@ public class FunctionContext {
 
     private final FrameDescriptor.Builder frameDescriptorBuilder;
 
+    private final FunctionContext enclosingContext;
+
     private int localVarIdx = 0;
 
     public FunctionContext(String funName) {
+        this(funName, null);
+    }
+
+    public FunctionContext(String funName, FunctionContext enclosingContext) {
         this.name = funName;
         this.paramsIdMap = new HashMap<>();
         this.localsIdMap = new HashMap<>();
         this.frameDescriptorBuilder = FrameDescriptor.newBuilder();
+        this.enclosingContext = enclosingContext;
     }
 
     public String getName() {
@@ -34,6 +42,17 @@ public class FunctionContext {
 
     public Integer getLocal(String name) {
         return this.localsIdMap.get(name);
+    }
+
+    public Pair<Integer, Integer> getNonLocalRec(String name, int scope) {
+        Integer local = getLocal(name);
+        if (local != null)
+            return Pair.create(local, scope);
+
+        return enclosingContext.getNonLocalRec(name, scope + 1);
+    }
+    public Pair<Integer, Integer> getNonLocal(String name) {
+        return getNonLocalRec(name, 0);
     }
 
     public int setLocal(String name) {
