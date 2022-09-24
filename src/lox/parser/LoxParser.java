@@ -119,21 +119,25 @@ public class LoxParser extends Parser {
         if (!match(TokenType.PAREN_OPEN))
             error("Expected a '(' before function arguments");
 
+        FunctionContext outerContext = this.currentFunContext;
+        FunctionContext functionContext = new FunctionContext((String)idToken.literal);
+
+        this.currentFunContext = functionContext;
+
         List<String> parameters = parameters();
 
         if (!match(TokenType.CURLY_BRACKET_OPEN))
             error("Expected a '{' to specify a function declaration");
 
-        FunctionContext functionContext = new FunctionContext((String)idToken.literal);
         functionContext.setParameters(parameters);
 
-        FunctionContext outerContext = this.currentFunContext;
+        BlockNode block = block();
 
-        this.currentFunContext = functionContext;
-        ExpressionNode block = block();
+        var funDeclNode = new FunctionDeclarationNode((String)idToken.literal, currentFunContext.getFrameDescriptor(), block);
+
         this.currentFunContext = outerContext;
 
-        return new FunctionDeclarationNode((String)idToken.literal, functionContext.getFrameDescriptor(), block);
+        return funDeclNode;
     }
 
     private LocalVariableNode.VariableWriteNode varDecl() throws ParseError {
@@ -173,9 +177,15 @@ public class LoxParser extends Parser {
             return returnStmt();
         else if (match(TokenType.WHILE))
             return whileStmt();
-        else if (match(TokenType.CURLY_BRACKET_OPEN))
-            return block();
-        else
+        else if (match(TokenType.CURLY_BRACKET_OPEN)) {
+            FunctionContext functionContext = new FunctionContext("_block"); // TODO can the fact all blocks are named that cause issues?
+            FunctionContext outerContext = this.currentFunContext;
+
+            this.currentFunContext = functionContext;
+            BlockNode block = block();
+            this.currentFunContext = outerContext;
+            return block;
+        } else
             return exprStatement();
     }
 
@@ -261,7 +271,7 @@ public class LoxParser extends Parser {
         if (isAtEnd() && previous().type != TokenType.CURLY_BRACKET_CLOSE)
             error("Unterminated block statement");
 
-        return new BlockNode(declarations);
+        return new BlockNode(new SequenceNode(declarations), currentFunContext.getFrameDescriptor());
     }
 
     private ExpressionNode exprStatement() throws ParseError {

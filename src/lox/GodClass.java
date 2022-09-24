@@ -36,8 +36,8 @@ public class GodClass {
             getContext().eval("tlox", inputStr);
             System.exit(0);
         } catch (PolyglotException e) {
-            // ParseError exception contains a message of the form "java.lang.RuntimeException: lox.parser.error.ParseError: ACTUAL_MESSAGE", so this is a dirty fix
-            if (e.getMessage().contains("[line ")) { // i.e. is a parse exception
+            // ParseError exception message has the form "java.lang.RuntimeException: lox.parser.error.ParseError: ACTUAL_MESSAGE", so this is a VERY dirty temporary fix
+            if (e.getMessage().contains("[line ")) { // i.e. caught a parse exception
                 String actualErrorMessage = e.getMessage().substring(e.getMessage().indexOf("[line "));
                 System.err.println(actualErrorMessage);
                 System.exit(65);
