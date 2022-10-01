@@ -4,6 +4,7 @@ import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import lox.nodes.BlockRootNode;
 import lox.nodes.ExpressionNode;
 
 public abstract class NonLocalVariableNode extends ExpressionNode {
@@ -32,12 +33,12 @@ public abstract class NonLocalVariableNode extends ExpressionNode {
     }
 
     protected VirtualFrame getCorrectFrame(VirtualFrame frame) {
-        VirtualFrame correctFrame = frame;
+        BlockRootNode correctBlock = (BlockRootNode) frame.getArguments()[0];
 
         for (int i = 0; i < scopeLevel; i++)
-            correctFrame = (VirtualFrame) frame.getArguments()[0];
+            correctBlock = (BlockRootNode) frame.getArguments()[0];
 
-        return correctFrame;
+        return correctBlock.getFrame();
     }
 
     public abstract static class VariableReadNode extends NonLocalVariableNode {

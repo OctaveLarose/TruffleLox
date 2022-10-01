@@ -18,6 +18,8 @@ public class FunctionContext {
 
     private final FunctionContext enclosingContext;
 
+    public boolean isFunBlock = true;
+
     private int localVarIdx = 0;
 
     public FunctionContext(String funName) {
@@ -49,10 +51,13 @@ public class FunctionContext {
         if (local != null)
             return Pair.create(local, scope);
 
+        if (enclosingContext == null)
+            return null;
+
         return enclosingContext.getNonLocalRec(name, scope + 1);
     }
     public Pair<Integer, Integer> getNonLocal(String name) {
-        return getNonLocalRec(name, 0);
+        return enclosingContext != null ? enclosingContext.getNonLocalRec(name, 0): null;
     }
 
     public int setLocal(String name) {
@@ -73,4 +78,8 @@ public class FunctionContext {
     public boolean isVarDefined(String varName) {
         return this.localsIdMap.containsKey(varName) || this.paramsIdMap.containsKey(varName);
     }
+
+//    public BlockNode getEnclosingBlock() {
+//        return this.enc;
+//    }
 }

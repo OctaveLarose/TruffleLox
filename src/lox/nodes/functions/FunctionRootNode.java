@@ -11,18 +11,18 @@ public class FunctionRootNode extends LoxRootNode implements TruffleObject {
     private final String name;
 
     @SuppressWarnings("FieldMayBeFinal")
-    @Child private BlockNode functionBody;
+    @Child private BlockNode functionBlock;
 
     public FunctionRootNode(FrameDescriptor frameDescriptor, String funName, BlockNode functionBody) {
         super(functionBody.getExpressions(), frameDescriptor);
         this.name = funName;
-        this.functionBody = functionBody;
+        this.functionBlock = functionBody;
     }
 
     @ExportMessage.Ignore
     @Override
     public Object execute(VirtualFrame frame) {
-        return this.functionBody.executeGeneric(frame);
+        return this.functionBlock.executeGeneric(frame);
     }
 
     @Override

@@ -6,8 +6,11 @@ import com.oracle.truffle.api.frame.VirtualFrame;
 public class BlockNode extends ExpressionNode {
     private final BlockRootNode blockRootNode;
 
-    public BlockNode(SequenceNode expressions, FrameDescriptor frameDescriptor) {
-        this.blockRootNode = new BlockRootNode(expressions, frameDescriptor);
+    private final boolean isMethodBlock;
+
+    public BlockNode(SequenceNode expressions, FrameDescriptor frameDescriptor, BlockNode enclosingScope, boolean isMethodBlock) {
+        this.blockRootNode = new BlockRootNode(expressions, frameDescriptor, enclosingScope);
+        this.isMethodBlock = isMethodBlock;
     }
 
     public ExpressionNode getExpressions() {
@@ -16,6 +19,9 @@ public class BlockNode extends ExpressionNode {
 
     @Override
     public Object executeGeneric(VirtualFrame frame) {
-        return this.blockRootNode.execute(frame);
+        if (isMethodBlock)
+            return this.blockRootNode.execute(frame);
+        else
+            return this.blockRootNode.executeWithOwnFrame();
     }
 }

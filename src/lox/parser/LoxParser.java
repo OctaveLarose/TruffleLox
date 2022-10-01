@@ -130,6 +130,7 @@ public class LoxParser extends Parser {
             error("Expected a '{' to specify a function declaration");
 
         functionContext.setParameters(parameters);
+        functionContext.isFunBlock = true;
 
         BlockNode block = block();
 
@@ -180,6 +181,7 @@ public class LoxParser extends Parser {
         else if (match(TokenType.CURLY_BRACKET_OPEN)) {
             FunctionContext outerContext = this.currentFunContext;
             this.currentFunContext = new FunctionContext("_block", outerContext); // can the fact all blocks are named that ever cause issues?
+            this.currentFunContext.isFunBlock = false;
             BlockNode block = block();
             this.currentFunContext = outerContext;
             return block;
@@ -269,7 +271,10 @@ public class LoxParser extends Parser {
         if (isAtEnd() && previous().type != TokenType.CURLY_BRACKET_CLOSE)
             error("Unterminated block statement");
 
-        return new BlockNode(new SequenceNode(declarations), currentFunContext.getFrameDescriptor());
+        return new BlockNode(new SequenceNode(declarations),
+                currentFunContext.getFrameDescriptor(),
+                null, // TODO needs to be implemented for nonlocalvariables
+                currentFunContext.isFunBlock);
     }
 
     private ExpressionNode exprStatement() throws ParseError {
@@ -504,7 +509,6 @@ public class LoxParser extends Parser {
             return LocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, this.currentFunContext.getLocal(identifierName));
 
         var nonLocalVar = this.currentFunContext.getNonLocal(identifierName);
-        System.out.println(nonLocalVar);
         if (nonLocalVar != null)
             return NonLocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, nonLocalVar.getLeft(), nonLocalVar.getRight());
 
