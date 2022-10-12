@@ -33,10 +33,10 @@ public abstract class NonLocalVariableNode extends ExpressionNode {
     }
 
     protected VirtualFrame getCorrectFrame(VirtualFrame frame) {
-        BlockRootNode correctBlock = (BlockRootNode) frame.getArguments()[0];
+        BlockRootNode correctBlock = (BlockRootNode) frame.getAuxiliarySlot(0);
 
         for (int i = 0; i < scopeLevel; i++)
-            correctBlock = (BlockRootNode) frame.getArguments()[0];
+            correctBlock = (BlockRootNode) frame.getAuxiliarySlot(0);
 
         return correctBlock.getFrame();
     }

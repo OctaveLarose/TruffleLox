@@ -5,11 +5,11 @@ import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.nodes.ExpressionNode;
 
-public abstract class ArgumentNode extends ExpressionNode {
+public abstract class LocalArgumentNode extends ExpressionNode {
 
     protected int slotId;
 
-    public ArgumentNode(int argIdx) {
+    public LocalArgumentNode(int argIdx) {
         this.slotId = argIdx;
     }
 
@@ -17,8 +17,8 @@ public abstract class ArgumentNode extends ExpressionNode {
         return this.slotId;
     }
 
-    public static abstract class ArgumentReadNode extends ArgumentNode {
-        public ArgumentReadNode(int argIdx) {
+    public static abstract class LocalArgumentReadNode extends LocalArgumentNode {
+        public LocalArgumentReadNode(int argIdx) {
             super(argIdx);
         }
 
@@ -30,8 +30,8 @@ public abstract class ArgumentNode extends ExpressionNode {
     }
 
     @NodeChild(value = "assignmentExpr", type = ExpressionNode.class)
-    public static abstract class ArgumentWriteNode extends ArgumentNode {
-        public ArgumentWriteNode(int argIdx) {
+    public static abstract class LocalArgumentWriteNode extends LocalArgumentNode {
+        public LocalArgumentWriteNode(int argIdx) {
             super(argIdx);
         }
 

@@ -16,19 +16,23 @@ import lox.nodes.statements.*;
 import lox.nodes.variables.*;
 import lox.parser.error.ParseError;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static lox.parser.Token.TokenType;
 
 // Recursive descent AST parser
 public class LoxParser extends Parser {
     private final String ROOT_FUNCTION_NAME = "_main";
+
+    private final String BLOCK_NAME = "_block";
+
     private final String sourceStr;
 
     private ClassContext currentClassContext;
 
     private FunctionContext currentFunContext;
+
+    private final Stack<FunctionContext> contextStack = new Stack<>();
 
     @SuppressWarnings("unused") // Used for debugging
     public LoxParser(String inputStr) {
@@ -45,10 +49,17 @@ public class LoxParser extends Parser {
         this.tokens = lexer.getTokens();
 
         this.currentFunContext = new FunctionContext(ROOT_FUNCTION_NAME);
+        contextStack.push(this.currentFunContext);
 
         ExpressionNode program = program();
+        SequenceNode programSequence = new SequenceNode(Collections.singletonList(program));
+        var frameDescr = this.currentFunContext.getFrameDescriptor();
+        BlockNode programBlock = new BlockNode(programSequence, frameDescr);
 
-        return new LoxRootNode(program, this.currentFunContext.getFrameDescriptor());
+        for (BlockRootNode subBlock: currentFunContext.subBlocks)
+            subBlock.setEnclosingScope(programBlock.getBlockRootNode());
+
+        return new LoxRootNode(program, frameDescr);
     }
 
     private ExpressionNode program() throws ParseError {
@@ -57,6 +68,7 @@ public class LoxParser extends Parser {
             var declaration = declaration();
             expressions.add(declaration);
         }
+
         return new SequenceNode(expressions);
     }
 
@@ -119,7 +131,6 @@ public class LoxParser extends Parser {
         if (!match(TokenType.PAREN_OPEN))
             error("Expected a '(' before function arguments");
 
-        FunctionContext outerContext = this.currentFunContext;
         FunctionContext functionContext = new FunctionContext((String)idToken.literal);
 
         this.currentFunContext = functionContext;
@@ -132,11 +143,17 @@ public class LoxParser extends Parser {
         functionContext.setParameters(parameters);
         functionContext.isFunBlock = true;
 
+        this.contextStack.push(functionContext);
+
         BlockNode block = block();
 
         var funDeclNode = new FunctionDeclarationNode((String)idToken.literal, currentFunContext.getFrameDescriptor(), block);
 
-        this.currentFunContext = outerContext;
+        for (BlockRootNode subBlock: currentFunContext.subBlocks)
+            subBlock.setEnclosingScope(block.getBlockRootNode());
+
+        this.contextStack.pop();
+        this.currentFunContext = this.contextStack.peek();
 
         return funDeclNode;
     }
@@ -179,19 +196,26 @@ public class LoxParser extends Parser {
         else if (match(TokenType.WHILE))
             return whileStmt();
         else if (match(TokenType.CURLY_BRACKET_OPEN)) {
-            FunctionContext outerContext = this.currentFunContext;
-            this.currentFunContext = new FunctionContext("_block", outerContext); // can the fact all blocks are named that ever cause issues?
+            var outerContext = this.currentFunContext;
+            this.currentFunContext = new FunctionContext(BLOCK_NAME, outerContext); // can the fact all blocks are named that ever cause issues?
             this.currentFunContext.isFunBlock = false;
+
+            this.contextStack.push(currentFunContext);
             BlockNode block = block();
-            this.currentFunContext = outerContext;
+
+            outerContext.subBlocks.add(block.getBlockRootNode());
+
+            var innerScope = contextStack.pop();
+            this.currentFunContext = contextStack.peek();
+            for (BlockRootNode subBlock: innerScope.subBlocks)
+                subBlock.setEnclosingScope(block.getBlockRootNode());
+
             return block;
         } else
             return exprStatement();
     }
 
     private ForNode forStmt() throws ParseError {
-        // forStmt        → "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement ;
-
         if (!match(TokenType.PAREN_OPEN))
             error("Expect parentheses after a for keyword");
 
@@ -271,10 +295,7 @@ public class LoxParser extends Parser {
         if (isAtEnd() && previous().type != TokenType.CURLY_BRACKET_CLOSE)
             error("Unterminated block statement");
 
-        return new BlockNode(new SequenceNode(declarations),
-                currentFunContext.getFrameDescriptor(),
-                null, // TODO needs to be implemented for nonlocalvariables
-                currentFunContext.isFunBlock);
+        return new BlockNode(new SequenceNode(declarations), currentFunContext.getFrameDescriptor());
     }
 
     private ExpressionNode exprStatement() throws ParseError {
@@ -309,9 +330,15 @@ public class LoxParser extends Parser {
                 return NonLocalVariableNodeFactory.VariableWriteNodeGen.create(varName, slotId, scopeLevel, assignment);
             }
 
-            if (assignee instanceof ArgumentNode) {
-                int argIdx = ((ArgumentNode)assignee).getSlotId();
-                return ArgumentNodeFactory.ArgumentWriteNodeGen.create(argIdx, assignment);
+            if (assignee instanceof LocalArgumentNode) {
+                int argIdx = ((LocalArgumentNode)assignee).getSlotId();
+                return LocalArgumentNodeFactory.LocalArgumentWriteNodeGen.create(argIdx, assignment);
+            }
+
+            if (assignee instanceof NonLocalArgumentNode) {
+                int argIdx = ((NonLocalArgumentNode) assignee).getSlotId();
+                int scopeLevel = ((NonLocalArgumentNode) assignee).getScopeLevel();
+                return NonLocalArgumentNodeFactory.NonLocalArgumentWriteNodeGen.create(argIdx, scopeLevel, assignment);
             }
 
             if (assignee instanceof ObjectPropertyNode objectPropertyNode) {
@@ -471,12 +498,6 @@ public class LoxParser extends Parser {
             case IDENTIFIER -> {
                 String identifierName = (String) currentToken.literal;
 
-                if (!this.currentFunContext.getName().equals(ROOT_FUNCTION_NAME)) { // i.e. whether we are currently parsing a function
-                    Integer argSlotId = this.currentFunContext.getParam(identifierName);
-                    if (argSlotId != null)
-                        return ArgumentNodeFactory.ArgumentReadNodeGen.create(argSlotId);
-                }
-
                 if (peek().type == TokenType.PAREN_OPEN) // A function call
                     return new FunctionNameLiteralNode((String) currentToken.literal);
                 else
@@ -509,8 +530,24 @@ public class LoxParser extends Parser {
             return LocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, this.currentFunContext.getLocal(identifierName));
 
         var nonLocalVar = this.currentFunContext.getNonLocal(identifierName);
-        if (nonLocalVar != null)
+        if (nonLocalVar != null) {
+            assert nonLocalVar.getRight() != 0 : "Scope of non local variable cannot be 0";
             return NonLocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, nonLocalVar.getLeft(), nonLocalVar.getRight());
+        }
+
+        if (!this.currentFunContext.getName().equals(ROOT_FUNCTION_NAME)) { // i.e. whether we are currently parsing a function
+            Integer argSlotId = this.currentFunContext.getParam(identifierName);
+            if (argSlotId != null)
+                return LocalArgumentNodeFactory.LocalArgumentReadNodeGen.create(argSlotId);
+        }
+
+        int depth = 1;
+        for (int i = this.contextStack.size() - 1; i >= 0; i--) {
+            var funContext = this.contextStack.get(i);
+            Integer argSlotId = funContext.getParam(identifierName);
+            if (argSlotId != null)
+                return NonLocalArgumentNodeFactory.NonLocalArgumentReadNodeGen.create(argSlotId, depth);
+        }
 
         return new IdentifierNode(identifierName);
     }

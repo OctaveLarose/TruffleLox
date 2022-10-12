@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 public class GodClass {
 
     static public void main(String[] args) {
-        eval("var a = 42; if (a == 12) { a + 2; } else { a = 2.42; }");
+        evalPrint("var a = 42; if (a == 12) { a + 2; } else { a = 2.42; }");
 //        if (args.length != 0) {
 //            runFile(args[0]);
 //        } else {

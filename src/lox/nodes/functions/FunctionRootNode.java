@@ -1,28 +1,16 @@
 package lox.nodes.functions;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.VirtualFrame;
 import com.oracle.truffle.api.interop.TruffleObject;
-import com.oracle.truffle.api.library.ExportMessage;
 import lox.nodes.BlockNode;
 import lox.nodes.LoxRootNode;
 
 public class FunctionRootNode extends LoxRootNode implements TruffleObject {
     private final String name;
 
-    @SuppressWarnings("FieldMayBeFinal")
-    @Child private BlockNode functionBlock;
-
     public FunctionRootNode(FrameDescriptor frameDescriptor, String funName, BlockNode functionBody) {
         super(functionBody.getExpressions(), frameDescriptor);
         this.name = funName;
-        this.functionBlock = functionBody;
-    }
-
-    @ExportMessage.Ignore
-    @Override
-    public Object execute(VirtualFrame frame) {
-        return this.functionBlock.executeGeneric(frame);
     }
 
     @Override

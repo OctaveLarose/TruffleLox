@@ -16,7 +16,6 @@ public final class LoxFunction implements TruffleObject {
         this.name = name;
     }
 
-
     @Override
     public String toString() {
         return "function " + name;

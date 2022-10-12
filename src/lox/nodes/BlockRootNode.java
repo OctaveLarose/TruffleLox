@@ -8,12 +8,12 @@ public class BlockRootNode extends LoxRootNode {
     //@Child
     private final ExpressionNode expressions;
 
-    private VirtualFrame frame;
+    private final VirtualFrame frame;
 
-    public BlockRootNode(SequenceNode expressions, FrameDescriptor frameDescriptor, BlockNode enclosingScope) {
+    public BlockRootNode(SequenceNode expressions, FrameDescriptor frameDescriptor) {
         super(expressions, frameDescriptor);
         this.expressions = expressions;
-        this.frame = new FrameWithoutBoxing(this.getFrameDescriptor(), new Object[]{enclosingScope});
+        this.frame = new FrameWithoutBoxing(this.getFrameDescriptor(), new Object[]{});
     }
 
     public ExpressionNode getExpressions() {
@@ -24,12 +24,11 @@ public class BlockRootNode extends LoxRootNode {
         return this.frame;
     }
 
-    public Object executeWithOwnFrame() {
+    public Object execute() {
         return this.expressions.executeGeneric(this.frame);
     }
 
-    @Override
-    public Object execute(VirtualFrame frame) {
-        return this.expressions.executeGeneric(frame);
+    public void setEnclosingScope(BlockRootNode enclosingScope) {
+        this.frame.setAuxiliarySlot(0, enclosingScope);
     }
 }
