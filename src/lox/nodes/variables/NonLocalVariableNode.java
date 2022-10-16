@@ -1,8 +1,11 @@
 package lox.nodes.variables;
 
+import com.oracle.truffle.api.dsl.Bind;
+import com.oracle.truffle.api.dsl.Cached.Shared;
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.FrameSlotTypeException;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.nodes.BlockRootNode;
 import lox.nodes.ExpressionNode;
@@ -32,7 +35,7 @@ public abstract class NonLocalVariableNode extends ExpressionNode {
         return scopeLevel;
     }
 
-    protected VirtualFrame getCorrectFrame(VirtualFrame frame) {
+    protected MaterializedFrame getCorrectFrame(VirtualFrame frame) {
         BlockRootNode correctBlock = (BlockRootNode) frame.getAuxiliarySlot(0);
 
         for (int i = 0; i < scopeLevel; i++)
@@ -46,19 +49,23 @@ public abstract class NonLocalVariableNode extends ExpressionNode {
             super(name, slotId, scopeLevel);
         }
 
-        @Specialization(guards = {"frame.isDouble(slotId)"}, rewriteOn = {FrameSlotTypeException.class})
-        public double readDouble(VirtualFrame frame) throws FrameSlotTypeException {
-            return getCorrectFrame(frame).getDouble(slotId);
+
+        @Specialization(guards = {"correctFrame.isDouble(slotId)"}, rewriteOn = {FrameSlotTypeException.class})
+        public final double readDouble(final VirtualFrame frame,
+                                       @Shared("all") @Bind("getCorrectFrame(frame)") final MaterializedFrame correctFrame) {
+            return correctFrame.getDouble(slotId);
         }
 
-        @Specialization(guards = {"frame.isBoolean(slotId)"}, rewriteOn = {FrameSlotTypeException.class})
-        public boolean readBool(VirtualFrame frame) throws FrameSlotTypeException {
-            return getCorrectFrame(frame).getBoolean(slotId);
+        @Specialization(guards = {"correctFrame.isDouble(slotId)"}, rewriteOn = {FrameSlotTypeException.class})
+        public final boolean readBool(final VirtualFrame frame,
+                                       @Shared("all") @Bind("getCorrectFrame(frame)") final MaterializedFrame correctFrame) {
+            return correctFrame.getBoolean(slotId);
         }
 
-        @Specialization(replaces = {"readDouble", "readBool"}, rewriteOn = {FrameSlotTypeException.class})
-        public Object readGeneric(VirtualFrame frame) throws FrameSlotTypeException {
-            return getCorrectFrame(frame).getObject(slotId);
+        @Specialization(guards = {"correctFrame.isDouble(slotId)"}, rewriteOn = {FrameSlotTypeException.class})
+        public final Object readGeneric(final VirtualFrame frame,
+                                        @Shared("all") @Bind("getCorrectFrame(frame)") final MaterializedFrame correctFrame) {
+            return correctFrame.getObject(slotId);
         }
     }
 

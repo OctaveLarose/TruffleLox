@@ -2,6 +2,7 @@ package lox.nodes.variables;
 
 import com.oracle.truffle.api.dsl.NodeChild;
 import com.oracle.truffle.api.dsl.Specialization;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.nodes.BlockRootNode;
 import lox.nodes.ExpressionNode;
@@ -25,7 +26,7 @@ public abstract class NonLocalArgumentNode extends ExpressionNode {
         return scopeLevel;
     }
 
-    protected VirtualFrame getCorrectFrame(VirtualFrame frame) {
+    protected MaterializedFrame getCorrectFrame(VirtualFrame frame) {
         BlockRootNode correctBlock = (BlockRootNode) frame.getAuxiliarySlot(0);
 
         for (int i = 0; i < scopeLevel; i++)

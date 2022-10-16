@@ -85,8 +85,4 @@ public class FunctionContext {
     public boolean isVarDefined(String varName) {
         return this.localsIdMap.containsKey(varName) || this.paramsIdMap.containsKey(varName);
     }
-
-//    public BlockNode getEnclosingBlock() {
-//        return this.enc;
-//    }
 }

@@ -1,26 +1,26 @@
 package lox.nodes;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
-import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.impl.FrameWithoutBoxing;
 
 public class BlockRootNode extends LoxRootNode {
     //@Child
     private final ExpressionNode expressions;
 
-    private final VirtualFrame frame;
+    private final MaterializedFrame frame;
 
     public BlockRootNode(SequenceNode expressions, FrameDescriptor frameDescriptor) {
         super(expressions, frameDescriptor);
         this.expressions = expressions;
-        this.frame = new FrameWithoutBoxing(this.getFrameDescriptor(), new Object[]{});
+        this.frame = new FrameWithoutBoxing(this.getFrameDescriptor(), new Object[]{}).materialize();
     }
 
     public ExpressionNode getExpressions() {
         return expressions;
     }
 
-    public VirtualFrame getFrame() {
+    public MaterializedFrame getFrame() {
         return this.frame;
     }
 

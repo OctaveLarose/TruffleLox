@@ -52,9 +52,8 @@ public class LoxParser extends Parser {
         contextStack.push(this.currentFunContext);
 
         ExpressionNode program = program();
-        SequenceNode programSequence = new SequenceNode(Collections.singletonList(program));
         var frameDescr = this.currentFunContext.getFrameDescriptor();
-        BlockNode programBlock = new BlockNode(programSequence, frameDescr);
+        BlockNode programBlock = new BlockNode(new SequenceNode(Collections.singletonList(program)), frameDescr);
 
         for (BlockRootNode subBlock: currentFunContext.subBlocks)
             subBlock.setEnclosingScope(programBlock.getBlockRootNode());
