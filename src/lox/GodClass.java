@@ -24,7 +24,8 @@ public class GodClass {
                 }
                 """
         );*/
-        evalPrint("var a = 42; if (a > 12) { a + 2; }");
+        evalPrint("var a = 42; if (a == 12) { a + 2; } else { a = 2.42; }");
+//        evalPrint("if (true) { var a = 42; if (a > 12) { a + 2; } }");
 //        evalPrint("var a = 42; if (-1 == -1) { if (a > 5) a = a - 24; } else { a = 0; }");
 //        evalPrint("var a = 42; if (-1 != -1) { if (a > 5) a = a - 24; } else { a = 0; }");
     }

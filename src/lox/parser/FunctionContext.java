@@ -77,9 +77,7 @@ public class FunctionContext {
     }
 
     public FrameDescriptor getFrameDescriptor() {
-        var frameDescriptor = this.frameDescriptorBuilder.build();
-        frameDescriptor.findOrAddAuxiliarySlot(0);
-        return frameDescriptor;
+        return this.frameDescriptorBuilder.build();
     }
 
     public boolean isVarDefined(String varName) {

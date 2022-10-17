@@ -27,8 +27,4 @@ public class BlockRootNode extends LoxRootNode {
     public Object execute() {
         return this.expressions.executeGeneric(this.frame);
     }
-
-    public void setEnclosingScope(BlockRootNode enclosingScope) {
-        this.frame.setAuxiliarySlot(0, enclosingScope);
-    }
 }

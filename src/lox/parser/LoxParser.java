@@ -15,6 +15,7 @@ import lox.nodes.loop.*;
 import lox.nodes.statements.*;
 import lox.nodes.variables.*;
 import lox.parser.error.ParseError;
+import org.graalvm.collections.Pair;
 
 import java.util.*;
 
@@ -33,6 +34,8 @@ public class LoxParser extends Parser {
     private FunctionContext currentFunContext;
 
     private final Stack<FunctionContext> contextStack = new Stack<>();
+
+    private final List<Pair<NodeWithContext, FunctionContext>> variableContextMap = new ArrayList<>();
 
     @SuppressWarnings("unused") // Used for debugging
     public LoxParser(String inputStr) {
@@ -55,10 +58,12 @@ public class LoxParser extends Parser {
         var frameDescr = this.currentFunContext.getFrameDescriptor();
         BlockNode programBlock = new BlockNode(new SequenceNode(Collections.singletonList(program)), frameDescr);
 
-        for (BlockRootNode subBlock: currentFunContext.subBlocks)
-            subBlock.setEnclosingScope(programBlock.getBlockRootNode());
+        for (var varContextPair: this.variableContextMap) {
+            if (varContextPair.getRight() == currentFunContext)
+                varContextPair.getLeft().setContext(programBlock.getBlockRootNode().getFrame());
+        }
 
-        return new LoxRootNode(program, frameDescr);
+        return new LoxRootNode(programBlock, frameDescr);
     }
 
     private ExpressionNode program() throws ParseError {
@@ -146,10 +151,7 @@ public class LoxParser extends Parser {
 
         BlockNode block = block();
 
-        var funDeclNode = new FunctionDeclarationNode((String)idToken.literal, currentFunContext.getFrameDescriptor(), block);
-
-        for (BlockRootNode subBlock: currentFunContext.subBlocks)
-            subBlock.setEnclosingScope(block.getBlockRootNode());
+        var funDeclNode = new FunctionDeclarationNode((String)idToken.literal, block);
 
         this.contextStack.pop();
         this.currentFunContext = this.contextStack.peek();
@@ -195,19 +197,13 @@ public class LoxParser extends Parser {
         else if (match(TokenType.WHILE))
             return whileStmt();
         else if (match(TokenType.CURLY_BRACKET_OPEN)) {
-            var outerContext = this.currentFunContext;
-            this.currentFunContext = new FunctionContext(BLOCK_NAME, outerContext); // can the fact all blocks are named that ever cause issues?
+            this.currentFunContext = new FunctionContext(BLOCK_NAME, this.currentFunContext);
             this.currentFunContext.isFunBlock = false;
 
             this.contextStack.push(currentFunContext);
             BlockNode block = block();
-
-            outerContext.subBlocks.add(block.getBlockRootNode());
-
-            var innerScope = contextStack.pop();
+            contextStack.pop();
             this.currentFunContext = contextStack.peek();
-            for (BlockRootNode subBlock: innerScope.subBlocks)
-                subBlock.setEnclosingScope(block.getBlockRootNode());
 
             return block;
         } else
@@ -242,6 +238,7 @@ public class LoxParser extends Parser {
             error("Unclosed parentheses after for declaration");
 
         ExpressionNode body = statement();
+
         return new ForNode(initialization, termination, increment, body);
     }
 
@@ -294,7 +291,14 @@ public class LoxParser extends Parser {
         if (isAtEnd() && previous().type != TokenType.CURLY_BRACKET_CLOSE)
             error("Unterminated block statement");
 
-        return new BlockNode(new SequenceNode(declarations), currentFunContext.getFrameDescriptor());
+        var blockNode = new BlockNode(new SequenceNode(declarations), currentFunContext.getFrameDescriptor());
+
+        for (var varContextPair: this.variableContextMap) {
+            if (varContextPair.getRight() == currentFunContext)
+                varContextPair.getLeft().setContext(blockNode.getBlockRootNode().getFrame());
+        }
+
+        return blockNode;
     }
 
     private ExpressionNode exprStatement() throws ParseError {
@@ -316,35 +320,39 @@ public class LoxParser extends Parser {
         if (match(TokenType.EQUALS)) {
             ExpressionNode assignment = assignment();
 
-            if (assignee instanceof LocalVariableNode) {
-                String varName = (((LocalVariableNode)assignee).getName());
-                int slotId = ((LocalVariableNode)assignee).getSlotId();
-                return LocalVariableNodeFactory.VariableWriteNodeGen.create(varName, slotId, assignment);
-            }
+            if (assignee instanceof LocalVariableNode localVar) {
+                return LocalVariableNodeFactory.VariableWriteNodeGen.create(localVar.getName(), localVar.getSlotId(), assignment);
+            } else if (assignee instanceof LocalArgumentNode localArg) {
+                return LocalArgumentNodeFactory.LocalArgumentWriteNodeGen.create(localArg.getSlotId(), assignment);
+            } else if (assignee instanceof NonLocalVariableNode nonLocalVar) {
+                var nonLocalVarWrite = NonLocalVariableNodeFactory.VariableWriteNodeGen.create(nonLocalVar.getName(), nonLocalVar.getSlotId(), assignment);
 
-            if (assignee instanceof NonLocalVariableNode) {
-                String varName = (((NonLocalVariableNode)assignee).getName());
-                int slotId = ((NonLocalVariableNode)assignee).getSlotId();
-                int scopeLevel = ((NonLocalVariableNode)assignee).getScopeLevel();
-                return NonLocalVariableNodeFactory.VariableWriteNodeGen.create(varName, slotId, scopeLevel, assignment);
-            }
+                for (var varContextPair: this.variableContextMap) {
+                    if (varContextPair.getLeft() == nonLocalVar) {
+                        variableContextMap.add(Pair.create(nonLocalVarWrite, varContextPair.getRight()));
+                        variableContextMap.remove(varContextPair);
+                        break;
+                    }
+                }
 
-            if (assignee instanceof LocalArgumentNode) {
-                int argIdx = ((LocalArgumentNode)assignee).getSlotId();
-                return LocalArgumentNodeFactory.LocalArgumentWriteNodeGen.create(argIdx, assignment);
-            }
+                return nonLocalVarWrite;
+            } else if (assignee instanceof NonLocalArgumentNode nonLocalArg) {
+                var nonLocalArgWrite = NonLocalArgumentNodeFactory.NonLocalArgumentWriteNodeGen.create(nonLocalArg.getSlotId(), assignment);
 
-            if (assignee instanceof NonLocalArgumentNode) {
-                int argIdx = ((NonLocalArgumentNode) assignee).getSlotId();
-                int scopeLevel = ((NonLocalArgumentNode) assignee).getScopeLevel();
-                return NonLocalArgumentNodeFactory.NonLocalArgumentWriteNodeGen.create(argIdx, scopeLevel, assignment);
-            }
+                for (var varContextPair: this.variableContextMap) {
+                    if (varContextPair.getLeft() == nonLocalArgWrite) {
+                        variableContextMap.add(Pair.create(nonLocalArgWrite, varContextPair.getRight()));
+                        variableContextMap.remove(varContextPair);
+                        break;
+                    }
+                }
 
-            if (assignee instanceof ObjectPropertyNode objectPropertyNode) {
+                return nonLocalArgWrite;
+            } else if (assignee instanceof ObjectPropertyNode objectPropertyNode) {
                 return ObjectPropertyNodeFactory.ObjectPropertyWriteNodeGen.create(objectPropertyNode.getClassExpr(), objectPropertyNode.getPropertyName(), assignment);
+            } else {
+                error("Invalid assignment target");
             }
-
-            error("Invalid assignment target");
         }
         return assignee;
     }
@@ -531,7 +539,10 @@ public class LoxParser extends Parser {
         var nonLocalVar = this.currentFunContext.getNonLocal(identifierName);
         if (nonLocalVar != null) {
             assert nonLocalVar.getRight() != 0 : "Scope of non local variable cannot be 0";
-            return NonLocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, nonLocalVar.getLeft(), nonLocalVar.getRight());
+            var nonLocalVariableNode = NonLocalVariableNodeFactory.VariableReadNodeGen.create(identifierName, nonLocalVar.getLeft());
+            var correspondingScope = this.contextStack.get(this.contextStack.size() - nonLocalVar.getLeft() - 2);
+            this.variableContextMap.add(Pair.create(nonLocalVariableNode, correspondingScope));
+            return nonLocalVariableNode;
         }
 
         if (!this.currentFunContext.getName().equals(ROOT_FUNCTION_NAME)) { // i.e. whether we are currently parsing a function
@@ -540,12 +551,11 @@ public class LoxParser extends Parser {
                 return LocalArgumentNodeFactory.LocalArgumentReadNodeGen.create(argSlotId);
         }
 
-        int depth = 1;
         for (int i = this.contextStack.size() - 1; i >= 0; i--) {
             var funContext = this.contextStack.get(i);
             Integer argSlotId = funContext.getParam(identifierName);
             if (argSlotId != null)
-                return NonLocalArgumentNodeFactory.NonLocalArgumentReadNodeGen.create(argSlotId, depth);
+                return NonLocalArgumentNodeFactory.NonLocalArgumentReadNodeGen.create(argSlotId);
         }
 
         return new IdentifierNode(identifierName);
