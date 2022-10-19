@@ -84,7 +84,7 @@ public class Lexer {
         this.tokens.add(new Token(tokenType, lexeme, literal, currentLine, symStartIdx));
     }
 
-    public List<Token> getTokens() throws ParseError {
+    public List<Token> getTokens() throws LexerError {
         while (!isAtEnd()) {
             this.symStartIdx = this.currentIdx;
             char c = advance();
@@ -171,7 +171,7 @@ public class Lexer {
         addToken(TokenType.INT, Integer.parseInt(sourceStr.substring(this.symStartIdx, this.currentIdx)));
     }
 
-    private void string() throws ParseError {
+    private void string() throws LexerError {
         while (peek() != '\"' && !isAtEnd()) advance();
 
         if (isAtEnd())

@@ -7,27 +7,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-// Named after the antipattern! Now it just needs to not eventually become the antipattern!
+// Named after the antipattern! Now it just needs to not eventually become the antipattern
 public class GodClass {
 
     static public void main(String[] args) {
-        /*eval("""
-                var a = "global";
-                {
-                    fun showA() {
-                       print a;
-                    }
-        
-                    showA();
-                    var a = "block";
-                    showA();
-                }
-                """
-        );*/
-        evalPrint("var a = 42; if (a == 12) { a + 2; } else { a = 2.42; }");
-//        evalPrint("if (true) { var a = 42; if (a > 12) { a + 2; } }");
-//        evalPrint("var a = 42; if (-1 == -1) { if (a > 5) a = a - 24; } else { a = 0; }");
-//        evalPrint("var a = 42; if (-1 != -1) { if (a > 5) a = a - 24; } else { a = 0; }");
+        if (args.length != 0) {
+            runFile(args[0]);
+        } else {
+            runREPL();
+        }
     }
 
     static public void runFile(String filePath) {
@@ -48,13 +36,10 @@ public class GodClass {
             getContext().eval("tlox", inputStr);
             System.exit(0);
         } catch (PolyglotException e) {
-            // ParseError exception message has the form "java.lang.RuntimeException: lox.parser.error.ParseError: ACTUAL_MESSAGE", so this is a VERY dirty temporary fix
-            if (e.getMessage().contains("[line ")) { // i.e. caught a parse exception
-                String actualErrorMessage = e.getMessage().substring(e.getMessage().indexOf("[line "));
-                System.err.println(actualErrorMessage);
+            if (e.getMessage().contains("FailedDuringParsing")) {
                 System.exit(65);
             } else { // Runtime exception
-                System.err.println(e.getMessage()); // TODO handle
+                System.err.println(e.getMessage()); // TODO handle better
                 System.exit(70);
             }
         }

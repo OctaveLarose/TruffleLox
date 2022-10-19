@@ -14,12 +14,15 @@ import lox.nodes.literals.*;
 import lox.nodes.loop.*;
 import lox.nodes.statements.*;
 import lox.nodes.variables.*;
+import lox.parser.error.FailedDuringParsing;
+import lox.parser.error.LexerError;
 import lox.parser.error.ParseError;
 import org.graalvm.collections.Pair;
 
 import java.util.*;
 
 import static lox.parser.Token.TokenType;
+import static lox.parser.Token.TokenType.SEMICOLON;
 
 // Recursive descent AST parser
 public class LoxParser extends Parser {
@@ -28,6 +31,8 @@ public class LoxParser extends Parser {
     private final String BLOCK_NAME = "_block";
 
     private final String sourceStr;
+
+    boolean hasThrown = false;
 
     private ClassContext currentClassContext;
 
@@ -47,14 +52,24 @@ public class LoxParser extends Parser {
         this.sourceStr = (String) source.getCharacters();
     }
 
-    public LoxRootNode parse() throws ParseError {
+    public LoxRootNode parse() throws FailedDuringParsing {
         Lexer lexer = new Lexer(this.sourceStr);
-        this.tokens = lexer.getTokens();
+
+        try {
+            this.tokens = lexer.getTokens();
+        } catch (LexerError e) {
+            System.err.println(e.getMessage());
+            throw new FailedDuringParsing();
+        }
 
         this.currentFunContext = new FunctionContext(ROOT_FUNCTION_NAME);
         contextStack.push(this.currentFunContext);
 
         ExpressionNode program = program();
+
+        if (hasThrown)
+            throw new FailedDuringParsing();
+
         var frameDescr = this.currentFunContext.getFrameDescriptor();
         BlockNode programBlock = new BlockNode(new SequenceNode(Collections.singletonList(program)), frameDescr);
 
@@ -66,7 +81,7 @@ public class LoxParser extends Parser {
         return new LoxRootNode(programBlock, frameDescr);
     }
 
-    private ExpressionNode program() throws ParseError {
+    private ExpressionNode program() {
         ArrayList<ExpressionNode> expressions = new ArrayList<>();
         while (!isAtEnd()) {
             var declaration = declaration();
@@ -76,17 +91,45 @@ public class LoxParser extends Parser {
         return new SequenceNode(expressions);
     }
 
-    private ExpressionNode declaration() throws ParseError {
-        if (match(TokenType.CLASS)) {
-            return classDecl();
-        } else if (match(TokenType.FUN)) {
-            return funDecl();
-        } else if (match(TokenType.VAR)) {
-            return varDecl();
+    private ExpressionNode declaration() {
+        try {
+            if (match(TokenType.CLASS)) {
+                return classDecl();
+            } else if (match(TokenType.FUN)) {
+                return funDecl();
+            } else if (match(TokenType.VAR)) {
+                return varDecl();
+            }
+            return statement();
+        } catch (ParseError e) {
+            System.err.println(e.getMessage());
+            hasThrown = true;
+            synchronize();
+            return null;
         }
-        return statement();
     }
 
+    private void synchronize() {
+        advance();
+
+        while (!isAtEnd()) {
+            if (previous().type == SEMICOLON) return;
+
+            switch (peek().type) {
+                case CLASS:
+                case FUN:
+                case VAR:
+                case FOR:
+                case IF:
+                case WHILE:
+                case PRINT:
+                case RETURN:
+                    return;
+            }
+
+            advance();
+        }
+    }
     private ClassDeclarationNode classDecl() throws ParseError {
 //        classDecl ->    "class" IDENTIFIER ( "<" IDENTIFIER )? "{" function* "}" ;
         Token identifierToken = peek();
@@ -171,7 +214,7 @@ public class LoxParser extends Parser {
         if (this.currentFunContext.isVarDefined(varName))
             error("Already a variable with this name in the current scope");
 
-        if (match(TokenType.SEMICOLON))
+        if (match(SEMICOLON))
             return LocalVariableNodeFactory.VariableWriteNodeGen.create(varName, this.currentFunContext.setLocal(varName), new NilLiteralNode());
 
         if (!match(TokenType.EQUALS))
@@ -179,7 +222,7 @@ public class LoxParser extends Parser {
 
         ExpressionNode assignedExpr = expression();
 
-        if (!match(TokenType.SEMICOLON))
+        if (!match(SEMICOLON))
             error("Unterminated variable declaration");
 
         return LocalVariableNodeFactory.VariableWriteNodeGen.create(varName, this.currentFunContext.setLocal(varName), assignedExpr);
@@ -215,7 +258,7 @@ public class LoxParser extends Parser {
             error("Expect parentheses after a for keyword");
 
         ExpressionNode initialization = null;
-        if (!match(TokenType.SEMICOLON)) {
+        if (!match(SEMICOLON)) {
             if (match(TokenType.VAR))
                 initialization = varDecl();
             else
@@ -223,10 +266,10 @@ public class LoxParser extends Parser {
         }
 
         ExpressionNode termination = null;
-        if (peek().type != TokenType.SEMICOLON)
+        if (peek().type != SEMICOLON)
             termination = expression();
 
-        if (!match(TokenType.SEMICOLON))
+        if (!match(SEMICOLON))
             error("Expect at least one semicolon in for declaration");
 
         ExpressionNode increment = null;
@@ -304,7 +347,7 @@ public class LoxParser extends Parser {
     private ExpressionNode exprStatement() throws ParseError {
         ExpressionNode expression = expression();
 
-        if (!match(TokenType.SEMICOLON))
+        if (!match(SEMICOLON))
             error("Unterminated statement");
 
         return expression;
@@ -511,18 +554,18 @@ public class LoxParser extends Parser {
                     return resolveIdentifier(identifierName);
             }
             case SUPER -> {
+                if (this.currentClassContext == null)
+                    error("super cannot be used outside of a class", currentToken);
+
+                if (!this.currentClassContext.hasSuperClass())
+                    error("super cannot be used in a class which has no superclass", currentToken);
+
                 if (!match(TokenType.DOT))
                     error("Expect '.' after 'super'");
 
                 Token token = peek();
                 if (!match(TokenType.IDENTIFIER))
                     error("Expect superclass method name");
-
-                if (this.currentClassContext == null)
-                    error("super cannot be used outside of a class");
-
-                if (!this.currentClassContext.hasSuperClass())
-                    error("super cannot be used in a class which has no superclass");
 
                 return new SuperExprNode(this.currentClassContext.getName(), (String) token.literal);
             }
@@ -554,8 +597,12 @@ public class LoxParser extends Parser {
         for (int i = this.contextStack.size() - 1; i >= 0; i--) {
             var funContext = this.contextStack.get(i);
             Integer argSlotId = funContext.getParam(identifierName);
-            if (argSlotId != null)
-                return NonLocalArgumentNodeFactory.NonLocalArgumentReadNodeGen.create(argSlotId);
+            if (argSlotId != null) {
+                var correspondingScope = this.contextStack.get(this.contextStack.size() - argSlotId - 1);
+                var nonLocalVariableNode = NonLocalArgumentNodeFactory.NonLocalArgumentReadNodeGen.create(argSlotId);
+                this.variableContextMap.add(Pair.create(nonLocalVariableNode, correspondingScope));
+                return nonLocalVariableNode;
+            }
         }
 
         return new IdentifierNode(identifierName);
@@ -603,12 +650,12 @@ public class LoxParser extends Parser {
     }
 
     private ExpressionNode returnStmt() throws ParseError {
-        if (match(TokenType.SEMICOLON))
+        if (match(SEMICOLON))
             return new ReturnStmt(null);
 
         ExpressionNode expr = expression();
 
-        if (!match(TokenType.SEMICOLON))
+        if (!match(SEMICOLON))
             error("Unterminated return statement");
 
         return new ReturnStmt(expr);
