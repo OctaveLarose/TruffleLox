@@ -1,8 +1,11 @@
-package lox.nodes;
+package lox.nodes.functions.blocks;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.impl.FrameWithoutBoxing;
+import lox.nodes.ExpressionNode;
+import lox.nodes.LoxRootNode;
+import lox.nodes.SequenceNode;
 
 public class BlockRootNode extends LoxRootNode {
     //@Child

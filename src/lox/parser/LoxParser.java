@@ -10,6 +10,7 @@ import lox.nodes.classes.*;
 import lox.nodes.comparison.*;
 import lox.nodes.conditionals.*;
 import lox.nodes.functions.*;
+import lox.nodes.functions.blocks.*;
 import lox.nodes.literals.*;
 import lox.nodes.loop.*;
 import lox.nodes.statements.*;
@@ -27,8 +28,6 @@ import static lox.parser.Token.TokenType.SEMICOLON;
 // Recursive descent AST parser
 public class LoxParser extends Parser {
     private final String ROOT_FUNCTION_NAME = "_main";
-
-    private final String BLOCK_NAME = "_block";
 
     private final String sourceStr;
 
@@ -194,7 +193,7 @@ public class LoxParser extends Parser {
 
         BlockNode block = block();
 
-        var funDeclNode = new FunctionDeclarationNode((String)idToken.literal, block);
+        var funDeclNode = new FunctionDeclarationNode((String)idToken.literal, parameters.size(), block);
 
         this.contextStack.pop();
         this.currentFunContext = this.contextStack.peek();
@@ -240,7 +239,7 @@ public class LoxParser extends Parser {
         else if (match(TokenType.WHILE))
             return whileStmt();
         else if (match(TokenType.CURLY_BRACKET_OPEN)) {
-            this.currentFunContext = new FunctionContext(BLOCK_NAME, this.currentFunContext);
+            this.currentFunContext = new FunctionContext("_block", this.currentFunContext);
             this.currentFunContext.isFunBlock = false;
 
             this.contextStack.push(currentFunContext);

@@ -1,7 +1,8 @@
-package lox.nodes;
+package lox.nodes.classes;
 
 import com.oracle.truffle.api.frame.VirtualFrame;
 import lox.LoxContext;
+import lox.nodes.ExpressionNode;
 import lox.nodes.functions.FunctionDeclarationNode;
 import lox.nodes.functions.FunctionRootNode;
 import lox.objects.LoxClassObject;

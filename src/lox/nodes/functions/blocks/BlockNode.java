@@ -1,7 +1,9 @@
-package lox.nodes;
+package lox.nodes.functions.blocks;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import lox.nodes.ExpressionNode;
+import lox.nodes.SequenceNode;
 
 public class BlockNode extends ExpressionNode {
     private final BlockRootNode blockRootNode;

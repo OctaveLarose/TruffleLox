@@ -2,7 +2,7 @@ package lox.parser;
 
 import com.oracle.truffle.api.frame.FrameDescriptor;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import lox.nodes.BlockRootNode;
+import lox.nodes.functions.blocks.BlockRootNode;
 import org.graalvm.collections.Pair;
 
 import java.util.ArrayList;

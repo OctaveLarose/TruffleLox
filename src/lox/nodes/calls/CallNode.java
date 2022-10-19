@@ -26,12 +26,16 @@ public class CallNode extends ExpressionNode {
         Object[] evaluatedArgs = evaluateArguments(frame);
 
         if (lookup instanceof FunctionRootNode function) {
+            if (function.getNbrArgs() != evaluatedArgs.length)
+                throw new RuntimeException("Expected " + function.getNbrArgs() + " arguments but got " + this.arguments.size() + ".");
+
             try {
                 return FunctionDispatchNodeGen.create().executeDispatch(new LoxFunction(function.getCallTarget(), function.getName()), evaluatedArgs);
             } catch (ReturnException returnException) {
                 return returnException.getResult();
             }
         } else if (lookup instanceof LoxClassObject classObject) {
+            // TODO argument number check here too
             return classObject.createInstance(evaluatedArgs);
         } else {
             throw new RuntimeException("should be unreachable");
