@@ -1,7 +1,7 @@
 package lox.parser;
 
 public class Token {
-    enum TokenType {
+    public enum TokenType {
         MINUS, PLUS, SLASH, STAR,
         PAREN_OPEN, PAREN_CLOSE, CURLY_BRACKET_OPEN, CURLY_BRACKET_CLOSE,
         EQUALS,

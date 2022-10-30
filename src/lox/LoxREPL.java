@@ -17,8 +17,7 @@ public class LoxREPL {
                 return;
             }
 
-            // We terminate statements if they're unterminated for the sake of convenience
-            // TODO which fucks up if it's, say a for statement
+            // We terminate statements if they're unterminated for the sake of convenience which fucks up if it's e.g. a for statement
 //            if (input.charAt(input.length() - 1) != ';')
 //                input = input.concat(";");
 

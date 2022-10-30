@@ -12,6 +12,9 @@ public class ParseError extends Exception {
 
     @Override
     public String getMessage() {
+        if (failingToken.type == Token.TokenType.EOF)
+            return "[line " + failingToken.lineIdx + "] Error at end: " + super.getMessage() + ".";
+
         return "[line " + failingToken.lineIdx + "] Error at '" + failingToken.lexeme +"': " + super.getMessage() + ".";
     }
 }

@@ -40,7 +40,7 @@ public class GodClass {
                 System.exit(65);
             } else { // Runtime exception
                 System.err.println(e.getMessage().substring(e.getMessage().indexOf(": ") + 2));
-                // TODO Lox also prints the current line number. I guess every node should memorize its line number
+                // TODO Lox also prints the current line number. Every node should have its line number as debug info
                 System.exit(70);
             }
         }

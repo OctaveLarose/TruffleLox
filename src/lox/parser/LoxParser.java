@@ -515,7 +515,7 @@ public class LoxParser extends Parser {
         while (match(TokenType.PAREN_OPEN) || match(TokenType.DOT)) {
             if (previous().type == TokenType.PAREN_OPEN) {
                 List<ExpressionNode> arguments = arguments();
-                primary = new CallNode(new LookupNode(primary), arguments); // Shouldn't always have to look it up, but it's a start
+                primary = new CallNode(LookupNodeGen.create(primary), arguments); // Shouldn't always have to look it up, but it's a start
             } else if (previous().type == TokenType.DOT) {
                 if (!match(TokenType.IDENTIFIER))
                     error("Expected an identifier after a \".\"");

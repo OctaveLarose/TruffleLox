@@ -20,22 +20,4 @@ public class ScopingTests extends ExpressionTestsBase {
                 """;
         assertEquals("inner\nouter\n", runWithOutput(testStr));
     }
-
-    @Test
-    public void globalVsBlock() {
-        String testStr = """
-                var a = "global";
-                {
-                    fun showA() {
-                       print a;
-                    }
-        
-                    showA();
-                    var a = "block";
-                    showA();
-                }
-                """;
-
-        assertEquals("global\nblock\n", runWithOutput(testStr));
-    }
 }

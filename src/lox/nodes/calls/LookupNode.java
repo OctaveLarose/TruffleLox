@@ -1,47 +1,65 @@
 package lox.nodes.calls;
 
+import com.oracle.truffle.api.dsl.Specialization;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.nodes.ExecutableNode;
 import lox.LoxContext;
 import lox.nodes.ExpressionNode;
 import lox.nodes.functions.FunctionRootNode;
 import lox.objects.LoxClassObject;
 
-public class LookupNode extends ExpressionNode {
+public abstract class LookupNode extends ExpressionNode {
     private final ExpressionNode lookupExpr;
+
+    private final LoxContext context;
 
     public LookupNode(ExpressionNode lookupExpr) {
         this.lookupExpr = lookupExpr;
+        this.context = LoxContext.get(this);
     }
 
-    @Override
-    public Object executeGeneric(VirtualFrame frame) {
-        LoxContext context = LoxContext.get(this);
+    @Specialization(rewriteOn = RuntimeException.class)
+    public Object executeRootNode(VirtualFrame frame) {
         Object caller = this.lookupExpr.executeGeneric(frame);
 
-        if (caller instanceof ExecutableNode) // or just RootNode? or just FunctionRootNode? No idea
+        if (caller instanceof FunctionRootNode)
             return caller;
+
+        throw new RuntimeException("Not a function root node, must be an identifier.");
+    }
+
+    @Specialization(rewriteOn = RuntimeException.class)
+    public FunctionRootNode executeFunction(VirtualFrame frame) {
+        Object caller = this.lookupExpr.executeGeneric(frame);
+
+        if (!(caller instanceof String callerString))
+            throw new RuntimeException("Attempting to call from something other than an identifier");
+
+        var funNode = context.globalScope.getFunction(callerString);
+
+        if (funNode == null)
+            throw new RuntimeException("Not a function.");
+
+        return funNode;
+    }
+
+    @Specialization(rewriteOn = RuntimeException.class)
+    public LoxClassObject executeClass(VirtualFrame frame) {
+        Object caller = this.lookupExpr.executeGeneric(frame);
 
         if (!(caller instanceof String callerString))
             throw new RuntimeException("Attempting to call something from something other than an identifier");
 
-        Object lookup = lookupFunction(callerString, context);
-        if (lookup != null)
-            return lookup;
+        var classNode = context.globalScope.getClass(callerString);
 
-        lookup = lookupClass(callerString, context);
-        if (lookup != null)
-            return lookup;
+        if (classNode == null)
+            throw new RuntimeException("Lookup failed, not a class.");
 
-
-        throw new RuntimeException("Couldn't look up the caller " + callerString + " (neither a known function nor class)");
+        return classNode;
     }
 
-    private FunctionRootNode lookupFunction(String callerString, LoxContext context) {
-        return context.globalScope.getFunction(callerString); // TODO those two should be specializations executeFunction() and executeClass(), context probably cached?
-    }
-
-    private LoxClassObject lookupClass(String callerString, LoxContext context) {
-        return context.globalScope.getClass(callerString);
-    }
+/*    @Fallback
+    public Object lookupFailed(VirtualFrame frame) {
+        String callerString = "xdd";
+        throw new UnsupportedOperationException("Couldn't look up the caller " + callerString + " (neither a known function nor class)");
+    }*/
 }
